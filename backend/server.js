@@ -36,19 +36,12 @@ app.get('/api/config/paypal', (req, res) =>
   res.send({ clientId: process.env.PAYPAL_CLIENT_ID })
 );
 
-if (process.env.NODE_ENV === 'production') {
-  app.use('/uploads', express.static('/var/data/uploads'));
-  app.use(express.static(path.join(__dirname, '/frontend/build')));
+// Serve static files from the React frontend app
+app.use(express.static(path.join(__dirname, 'frontend/build')));
 
-  app.get('*', (req, res) =>
-    res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
-  );
-} else {
-  app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
-  app.get('/', (req, res) => {
-    res.send('API working');
-  });
-}
+app.get('*', (req, res) =>
+  res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
+);
 
 app.use(notFound);
 app.use(errorHandler);
