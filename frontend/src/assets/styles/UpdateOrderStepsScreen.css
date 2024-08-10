@@ -1,0 +1,65 @@
+/* Styles for the progress card */
+.progress-card {
+  margin-top: 20px;
+  padding: 15px;
+}
+
+/* Styles for the progress bar container */
+.progress-bar-container {
+  position: relative;
+  height: 10px;
+  background-color: #e0e0e0;
+  border-radius: 5px;
+  margin-bottom: 10px;
+}
+
+/* Styles for the progress bar */
+.progress-bar {
+  height: 100%;
+  background-color: #007bff; /* Blue color */
+  transition: width 0.5s ease;
+}
+
+/* Styles for the progress checkpoints */
+.progress-checkpoints {
+  display: flex;
+  flex-direction: column;
+  margin-top: 10px;
+}
+
+.checkpoint {
+  position: relative;
+  padding-left: 30px;
+  margin-bottom: 10px;
+  font-size: 16px;
+  color: #6c757d; /* Default text color */
+  transition: color 0.3s ease;
+}
+
+.checkpoint-dot {
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #6c757d; /* Default dot color */
+  transition: background-color 0.3s ease;
+}
+
+.checkpoint.complete {
+  color: #007bff; /* Blue color for completed status text */
+}
+
+.checkpoint.complete .checkpoint-dot {
+  background-color: #007bff; /* Blue color for completed status dot */
+}
+
+/* Toast notification styles */
+.update-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  z-index: 1050;
+}

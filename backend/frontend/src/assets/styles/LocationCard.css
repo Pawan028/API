@@ -1,0 +1,98 @@
+
+.location-card {
+  background-color: #fff;
+  border-radius: 15px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.15);
+  padding: 20px;
+  max-width: 600px;
+  margin: 20px auto;
+  transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+  opacity: 0;
+  transform: scale(0.9);
+  animation: fadeIn 0.5s forwards ease-in-out;
+  position: fixed; /* Fixed positioning to stay on top */
+  top: 50px; /* Distance from the top of the screen */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%) scale(0.9); /* Center horizontally */
+  z-index: 1000; /* Ensure it's on top of other content */
+}
+
+.location-card.show {
+  opacity: 1;
+  transform: translateX(-50%) scale(1); /* Center horizontally */
+  display: block;
+}
+
+
+ /* Base Styling */
+@keyframes fadeIn {
+  to {
+      opacity: 1;
+      transform: translateX(-50%) scale(1); /* Center horizontally */
+  }
+}
+  
+  .location-card form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .location-card .form-group {
+    margin-bottom: 15px;
+  }
+  
+  .location-card .form-group label {
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  
+  .location-card .form-group input {
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    transition: border 0.3s ease, box-shadow 0.3s ease;
+  }
+  
+  .location-card .form-group input:focus {
+    border: 1px solid #007bff;
+    box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  }
+  
+  .location-card button {
+    align-self: flex-end;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+  }
+  
+  .location-card button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+  }
+  
+  .location-card button:focus {
+    outline: none;
+  }
+  
+  .location-card p {
+    margin-top: 15px;
+    font-weight: bold;
+    color: #007bff;
+    text-align: center;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  

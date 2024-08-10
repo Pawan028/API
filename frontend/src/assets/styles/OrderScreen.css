@@ -1,0 +1,130 @@
+/* General Styles for OrderScreen */
+.order-screen {
+    padding: 2rem;
+    background-color: #f8f9fa;
+}
+
+.order-screen h1 {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: #333;
+}
+
+.order-screen .list-group-item {
+    border: none;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-screen .list-group-item h2 {
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+    color: #007bff;
+}
+
+.order-screen .list-group-item p {
+    font-size: 1rem;
+    color: #555;
+}
+
+.order-screen .order-items .list-group-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.order-screen .order-items img {
+    max-width: 60px;
+    border-radius: 0.5rem;
+}
+
+.order-screen .order-items .item-details {
+    margin-left: 1rem;
+    flex-grow: 1;
+}
+
+.order-screen .order-items .item-details a {
+    color: #007bff;
+    text-decoration: none;
+}
+
+.order-screen .order-summary {
+    background-color: #fff;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+}
+
+.order-screen .order-summary h2 {
+    margin-bottom: 1rem;
+    color: #007bff;
+}
+
+.order-screen .order-summary .list-group-item {
+    border: none;
+    padding: 1rem;
+}
+
+.order-screen .order-summary .list-group-item row {
+    margin-bottom: 0.5rem;
+}
+
+.order-screen .order-summary .btn-block {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border-radius: 0.5rem;
+    text-align: center;
+    cursor: pointer;
+}
+
+.order-screen .order-summary .btn-block:hover {
+    background-color: #0056b3;
+}
+
+.order-screen .order-summary .btn-block:disabled {
+    background-color: #6c757d;
+    cursor: not-allowed;
+}
+
+.order-screen .message-success {
+    background-color: #d4edda;
+    color: #155724;
+    border: 1px solid #c3e6cb;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.order-screen .message-danger {
+    background-color: #f8d7da;
+    color: #721c24;
+    border: 1px solid #f5c6cb;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+}
+
+.order-screen .loader {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100px;
+}
+
+.order-screen .paypal-buttons {
+    margin-top: 1rem;
+}
+
+@media (max-width: 768px) {
+    .order-screen .order-summary {
+        padding: 1rem;
+    }
+
+    .order-screen .order-items .item-details {
+        font-size: 0.875rem;
+    }
+}

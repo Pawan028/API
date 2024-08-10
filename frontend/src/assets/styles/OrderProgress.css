@@ -1,0 +1,91 @@
+/* Container for the order tracking screen */
+.order-track-container {
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+/* Header styles */
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 2rem;
+  color: #343a40;
+}
+
+/* Card container for the order status */
+.card {
+  border: none;
+  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+/* List group item styles */
+.progress-list-group-item {
+  position: relative;
+  padding: 15px 20px;
+  border: 1px solid #dee2e6;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Progress checkpoint styles */
+.progress-checkpoint {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background-color: #007bff;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+/* Completed status styles */
+.complete {
+  background-color: #e9ecef;
+  color: #495057;
+}
+
+/* Pending status styles */
+.pending {
+  color: #6c757d;
+}
+
+/* Status update animation */
+@keyframes statusUpdate {
+  from {
+    transform: scale(0.9);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Status update color and animation */
+.progress-list-group-item.complete {
+  background-color: #007bff;
+  color: #ffffff;
+  animation: statusUpdate 0.5s ease-in-out;
+}
+
+.progress-list-group-item.pending {
+  background-color: #ffffff;
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+  .order-track-container {
+    padding: 10px;
+  }
+
+  h1 {
+    font-size: 1.5rem;
+  }
+
+  .progress-list-group-item {
+    padding: 10px;
+  }
+}
