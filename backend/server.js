@@ -16,15 +16,11 @@ dotenv.config();
 
 const port = process.env.PORT || 5000;
 
+const app = express();
+
 connectDB();
 
-const app = express();
-app.use(cors({
-  origin: ["https://deploy-mern-1whq.vercel.app"],
-  methods: ["POST", "GET"],
-  credentials: true
-}));
-
+app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -41,7 +37,6 @@ app.get('/api/config/paypal', (req, res) =>
 );
 
 if (process.env.NODE_ENV === 'production') {
-  const __dirname = path.resolve();
   app.use('/uploads', express.static('/var/data/uploads'));
   app.use(express.static(path.join(__dirname, '/frontend/build')));
 
@@ -49,16 +44,19 @@ if (process.env.NODE_ENV === 'production') {
     res.sendFile(path.resolve(__dirname, 'frontend', 'build', 'index.html'))
   );
 } else {
-  const __dirname = path.resolve();
   app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
   app.get('/', (req, res) => {
-    res.send('API is running....');
+    res.send('API working');
   });
 }
 
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(port, () =>
-  console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
-);
+module.exports = app;
+
+if (!process.env.VERCEL) {
+  app.listen(port, () =>
+    console.log(`Server running in ${process.env.NODE_ENV} mode on port ${port}`)
+  );
+}
