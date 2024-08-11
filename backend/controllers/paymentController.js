@@ -1,46 +1,56 @@
-const asyncHandler = require('../middleware/asyncHandler'); // Adjust path as necessary
-const { createOrder, verifyPaymentSignature } = require('../utils/razorpay');
-const Order = require('../models/orderModel');
+const Razorpay = require('razorpay');
+const Payment = require('../models/paymentModel');
 
-// @desc    Initiate Razorpay payment
-// @route   POST /api/payments/initiate
-// @access  Private
-const initiatePayment = asyncHandler(async (req, res) => {
-  const { amount } = req.body;
-
-  const order = await createOrder(amount);
-  res.status(200).json(order);
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
-// @desc    Verify Razorpay payment
-// @route   POST /api/payments/verify
-// @access  Private
-const verifyPayment = asyncHandler(async (req, res) => {
-  const { razorpayOrderId, razorpayPaymentId, razorpaySignature, orderId } = req.body;
+const createOrder = async (req, res) => {
+  const { amount, currency, receipt } = req.body;
 
-  const isVerified = verifyPaymentSignature(razorpayOrderId, razorpayPaymentId, razorpaySignature);
+  try {
+    const order = await razorpay.orders.create({
+      amount: amount * 100, // Amount in paise
+      currency: currency,
+      receipt: receipt,
+    });
 
-  if (isVerified) {
-    const order = await Order.findById(orderId);
-    if (order) {
-      order.isPaid = true;
-      order.paidAt = Date.now();
-      order.paymentResult = {
-        id: razorpayPaymentId,
-        status: 'Paid',
-        update_time: order.paidAt,
-      };
-      const updatedOrder = await order.save();
-      res.status(200).json({ success: true, order: updatedOrder });
-    } else {
-      res.status(404).json({ success: false, message: 'Order not found' });
-    }
-  } else {
-    res.status(400).json({ success: false, message: 'Payment verification failed' });
+    res.json(order);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
-});
-
-module.exports = {
-  initiatePayment,
-  verifyPayment
 };
+
+const verifyPayment = async (req, res) => {
+  const { paymentId, orderId, signature } = req.body;
+
+  try {
+    const crypto = require('crypto');
+    const generatedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    if (generatedSignature === signature) {
+      // Payment is verified
+      // Save payment details to the database
+      const payment = new Payment({
+        order: orderId,
+        paymentMethod: 'Razorpay',
+        amountPaid: req.body.amount,
+        paymentStatus: 'Completed',
+        transactionId: paymentId,
+      });
+
+      await payment.save();
+      res.json({ success: true });
+    } else {
+      res.status(400).json({ message: 'Invalid signature' });
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+};
+
+module.exports = { createOrder, verifyPayment };

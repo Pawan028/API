@@ -2,8 +2,15 @@ const asyncHandler = require('../middleware/asyncHandler'); // Adjust path as ne
 const Order = require('../models/orderModel');
 const Product = require('../models/productModel');
 const { calcPrices } = require('../utils/calcPrices');
-const { verifyPayPalPayment, checkIfNewTransaction } = require('../utils/paypal');
+const Razorpay = require('razorpay');
+const crypto = require('crypto');
 
+require('dotenv').config();
+
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
@@ -54,6 +61,74 @@ const addOrderItems = asyncHandler(async (req, res) => {
     const createdOrder = await order.save();
 
     res.status(201).json(createdOrder);
+  }
+    // Create a Razorpay order
+    const razorpayOrder = await razorpay.orders.create({
+      amount: totalPrice * 100, // Amount in paise
+      currency: 'INR',
+      receipt: createdOrder._id.toString(),
+    });
+
+    // Save Razorpay order ID to the order
+    createdOrder.paymentDetails = {
+      razorpayOrderId: razorpayOrder.id,
+    };
+
+    await createdOrder.save();
+
+    res.status(201).json({ order: createdOrder, razorpayOrder });
+
+});
+
+
+// @desc    Verify Razorpay payment
+// @route   POST /api/orders/:id/verify-payment
+// @access  Private
+const verifyPayment = asyncHandler(async (req, res) => {
+  const { paymentId, orderId, signature } = req.body;
+
+  try {
+    const generatedSignature = crypto
+      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
+      .update(`${orderId}|${paymentId}`)
+      .digest('hex');
+
+    if (generatedSignature === signature) {
+      // Payment is verified
+      const order = await Order.findById(orderId);
+
+      if (order) {
+        order.isPaid = true;
+        order.paidAt = Date.now();
+        order.paymentResult = {
+          id: paymentId,
+          status: 'Paid',
+        };
+
+        const updatedOrder = await order.save();
+
+        // Save payment details
+        const payment = new Payment({
+          order: orderId,
+          paymentMethod: 'Razorpay',
+          amountPaid: order.totalPrice,
+          paymentStatus: 'Completed',
+          transactionId: paymentId,
+        });
+
+        await payment.save();
+
+        res.json(updatedOrder);
+      } else {
+        res.status(404);
+        throw new Error('Order not found');
+      }
+    } else {
+      res.status(400);
+      throw new Error('Invalid signature');
+    }
+  } catch (error) {
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -264,6 +339,7 @@ module.exports = {
   addOrderItems,
   getMyOrders,
   getOrderById,
+  verifyPayment, 
   updateOrderToPaid,
   updateOrderToDelivered,
   getOrders,

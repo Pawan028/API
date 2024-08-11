@@ -5,6 +5,7 @@ const {
   addOrderItems,
   getMyOrders,
   getOrderById,
+  verifyPayment,
   updateOrderToPaid,
   updateOrderToDelivered,
   getOrders,
@@ -27,6 +28,9 @@ router.route('/mine')
 
 router.route('/:id')
   .get(protect, getOrderById);
+  
+router.route('/:id/verify-payment')
+  .post(protect, verifyPayment);
 
 router.route('/:id/pay')
   .put(protect, updateOrderToPaid);
