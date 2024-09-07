@@ -1,13 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { FaTimes } from 'react-icons/fa';
 import { useDispatch, useSelector } from 'react-redux';
+import { FaTimes } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useProfileMutation } from '../slices/usersApiSlice';
 import { useGetMyOrdersQuery } from '../slices/ordersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { Link } from 'react-router-dom';
-import Loader from '../components/Loader';
-import Message from '../components/Message';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -17,7 +15,6 @@ const ProfileScreen = () => {
 
   const { userInfo } = useSelector((state) => state.auth);
   const { data: orders, isLoading, error } = useGetMyOrdersQuery();
-
   const [updateProfile, { isLoading: loadingUpdateProfile }] = useProfileMutation();
 
   useEffect(() => {
@@ -26,7 +23,6 @@ const ProfileScreen = () => {
   }, [userInfo.email, userInfo.name]);
 
   const dispatch = useDispatch();
-
   const submitHandler = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
@@ -43,120 +39,102 @@ const ProfileScreen = () => {
   };
 
   return (
-    <div className="container mx-auto py-10 px-5 md:px-0">
-      {/* Profile Section */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
-        <div className="p-6 bg-white shadow-2xl rounded-3xl transform hover:scale-105 transition duration-500">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">User Profile</h2>
+    <div className="container mx-auto my-8 px-4">
+      <div className="flex flex-col md:flex-row gap-6">
+        <div className="w-full md:w-1/3 p-4 bg-white shadow-lg rounded-lg transform transition-transform hover:scale-105">
+          <h2 className="text-xl font-bold mb-6 text-center">User Profile</h2>
           <form onSubmit={submitHandler} className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <label className="block text-sm font-medium mb-2">Name</label>
               <input
                 type="text"
-                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter name"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <label className="block text-sm font-medium mb-2">Email Address</label>
               <input
                 type="email"
-                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <label className="block text-sm font-medium mb-2">Password</label>
               <input
                 type="password"
-                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
-
             <div>
-              <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+              <label className="block text-sm font-medium mb-2">Confirm Password</label>
               <input
                 type="password"
-                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Confirm password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
               />
             </div>
-
             <button
               type="submit"
-              className="w-full bg-indigo-600 text-white py-2 rounded-lg shadow-lg transform hover:scale-105 transition duration-300"
+              className="w-full py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transform transition-transform hover:scale-105"
             >
               Update
             </button>
-
-            {loadingUpdateProfile && <Loader />}
+            {loadingUpdateProfile && <div className="loader"></div>}
           </form>
         </div>
 
-        {/* Orders Section */}
-        <div className="md:col-span-2 p-6 bg-white shadow-2xl rounded-3xl transform hover:scale-105 transition duration-500">
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">My Orders</h2>
-
+        <div className="w-full md:w-2/3 p-4 bg-white shadow-lg rounded-lg transform transition-transform hover:scale-105">
+          <h2 className="text-xl font-bold mb-6 text-center">My Orders</h2>
           {isLoading ? (
-            <Loader />
+            <div className="loader"></div>
           ) : error ? (
-            <Message variant="danger">{error?.data?.message || error.error}</Message>
+            <div className="text-red-500 text-center">{error?.data?.message || error.error}</div>
           ) : (
-            <table className="min-w-full bg-white shadow-lg rounded-2xl overflow-hidden">
-              <thead className="bg-gray-200">
-                <tr>
-                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">ID</th>
-                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">DATE</th>
-                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">TOTAL</th>
-                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">PAID</th>
-                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">DELIVERED</th>
-                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800"></th>
-                </tr>
-              </thead>
-              <tbody className="bg-white">
-                {orders.map((order) => (
-                  <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-100">
-                    <td className="py-3 px-5">{order._id}</td>
-                    <td className="py-3 px-5">{order.createdAt.substring(0, 10)}</td>
-                    <td className="py-3 px-5">₹{order.totalPrice}</td>
-                    <td className="py-3 px-5">
-                      {order.isPaid ? (
-                        <span className="text-green-500 font-semibold">
-                          {order.paidAt.substring(0, 10)}
-                        </span>
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                    </td>
-                    <td className="py-3 px-5">
-                      {order.isDelivered ? (
-                        <span className="text-green-500 font-semibold">
-                          {order.deliveredAt.substring(0, 10)}
-                        </span>
-                      ) : (
-                        <FaTimes className="text-red-500" />
-                      )}
-                    </td>
-                    <td className="py-3 px-5">
-                      <Link to={`/order/${order._id}`} className="text-indigo-600 hover:underline">
-                        Details
-                      </Link>
-                    </td>
+            <div className="overflow-x-auto">
+              <table className="min-w-full table-auto bg-gray-100 rounded-lg">
+                <thead className="bg-gray-300">
+                  <tr>
+                    <th className="px-4 py-2 text-left">ID</th>
+                    <th className="px-4 py-2 text-left">Date</th>
+                    <th className="px-4 py-2 text-left">Total</th>
+                    <th className="px-4 py-2 text-left">Paid</th>
+                    <th className="px-4 py-2 text-left">Delivered</th>
+                    <th className="px-4 py-2 text-left"></th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {orders.map((order) => (
+                    <tr key={order._id} className="hover:bg-gray-200 transform transition-transform hover:scale-105">
+                      <td className="border px-4 py-2">{order._id}</td>
+                      <td className="border px-4 py-2">{order.createdAt.substring(0, 10)}</td>
+                      <td className="border px-4 py-2">₹{order.totalPrice}</td>
+                      <td className="border px-4 py-2">
+                        {order.isPaid ? order.paidAt.substring(0, 10) : <FaTimes className="text-red-500" />}
+                      </td>
+                      <td className="border px-4 py-2">
+                        {order.isDelivered ? order.deliveredAt.substring(0, 10) : <FaTimes className="text-red-500" />}
+                      </td>
+                      <td className="border px-4 py-2">
+                        <Link to={`/order/${order._id}`} className="text-blue-500 hover:underline">
+                          Details
+                        </Link>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

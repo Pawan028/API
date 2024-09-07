@@ -9,7 +9,6 @@ const userRoutes = require('./routes/userRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const uploadRoutes = require('./routes/uploadRoutes');
 const locationRoutes = require('./routes/locationRoutes');
-const paymentRoutes = require('./routes/paymentRoutes');
 const { notFound, errorHandler } = require('./middleware/errorMiddleware');
 
 dotenv.config();
@@ -29,7 +28,7 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
-app.use('/api/payments', paymentRoutes);
+app.use('/api/payment', require('./routes/paymentRoutes'));
 app.use('/api/locations', locationRoutes);
 
 app.get('/api/config/paypal', (req, res) =>
