@@ -2,20 +2,9 @@ import { useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { useDispatch, useSelector } from 'react-redux';
-import {
-  Row,
-  Col,
-  Image,
-  ListGroup,
-  Card,
-  Button,
-  Form,
-} from 'react-bootstrap';
+import { Row, Col, Image, ListGroup, Card, Button, Form } from 'react-bootstrap';
 import { toast } from 'react-toastify';
-import {
-  useGetProductDetailsQuery,
-  useCreateReviewMutation,
-} from '../slices/productsApiSlice';
+import { useGetProductDetailsQuery, useCreateReviewMutation } from '../slices/productsApiSlice';
 import Rating from '../components/Rating';
 import Loader from '../components/Loader';
 import Message from '../components/Message';
@@ -24,7 +13,6 @@ import { addToCart } from '../slices/cartSlice';
 
 const ProductScreen = () => {
   const { id: productId } = useParams();
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -37,27 +25,15 @@ const ProductScreen = () => {
     navigate('/cart');
   };
 
-  const {
-    data: product,
-    isLoading,
-    refetch,
-    error,
-  } = useGetProductDetailsQuery(productId);
-
+  const { data: product, isLoading, refetch, error } = useGetProductDetailsQuery(productId);
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [createReview, { isLoading: loadingProductReview }] =
-    useCreateReviewMutation();
+  const [createReview, { isLoading: loadingProductReview }] = useCreateReviewMutation();
 
   const submitHandler = async (e) => {
     e.preventDefault();
-
     try {
-      await createReview({
-        productId,
-        rating,
-        comment,
-      }).unwrap();
+      await createReview({ productId, rating, comment }).unwrap();
       refetch();
       toast.success('Review created successfully');
     } catch (err) {
@@ -79,29 +55,27 @@ const ProductScreen = () => {
       ) : (
         <>
           <Meta title={product.name} description={product.description} />
-          <Row>
-            <Col md={6}>
-              <Image src={product.image} alt={product.name} fluid />
+          <Row className='my-6 mx-4 lg:mx-12'>
+            <Col md={6} className='mb-6'>
+              <Image
+                src={product.image}
+                alt={product.name}
+                fluid
+                className='w-full h-100 object-cover rounded-lg shadow-lg'
+              />
             </Col>
-            <Col md={3}>
-              <ListGroup variant='flush'>
+            <Col md={6} lg={3} className='mb-6'>
+              <ListGroup variant='flush' className='bg-white rounded-lg shadow-lg p-4'>
+                <ListGroup.Item className='font-semibold text-lg'>{product.name}</ListGroup.Item>
                 <ListGroup.Item>
-                  <h3>{product.name}</h3>
-                </ListGroup.Item>
-                <ListGroup.Item>
-                  <Rating
-                    value={product.rating}
-                    text={`${product.numReviews} reviews`}
-                  />
+                  <Rating value={product.rating} text={`${product.numReviews} reviews`} />
                 </ListGroup.Item>
                 <ListGroup.Item>Price: ₹{product.price}</ListGroup.Item>
-                <ListGroup.Item>
-                  Description: {product.description}
-                </ListGroup.Item>
+                <ListGroup.Item>Description: {product.description}</ListGroup.Item>
               </ListGroup>
             </Col>
-            <Col md={3}>
-              <Card>
+            <Col md={6} lg={3} className='mb-6'>
+              <Card className='bg-white rounded-lg shadow-lg p-4'>
                 <ListGroup variant='flush'>
                   <ListGroup.Item>
                     <Row>
@@ -119,8 +93,6 @@ const ProductScreen = () => {
                       </Col>
                     </Row>
                   </ListGroup.Item>
-
-                  {/* Qty Select */}
                   {product.countInStock > 0 && (
                     <ListGroup.Item>
                       <Row>
@@ -130,23 +102,21 @@ const ProductScreen = () => {
                             as='select'
                             value={qty}
                             onChange={(e) => setQty(Number(e.target.value))}
+                            className='border-2 border-gray-300 rounded-md shadow-sm'
                           >
-                            {[...Array(product.countInStock).keys()].map(
-                              (x) => (
-                                <option key={x + 1} value={x + 1}>
-                                  {x + 1}
-                                </option>
-                              )
-                            )}
+                            {[...Array(product.countInStock).keys()].map((x) => (
+                              <option key={x + 1} value={x + 1}>
+                                {x + 1}
+                              </option>
+                            ))}
                           </Form.Control>
                         </Col>
                       </Row>
                     </ListGroup.Item>
                   )}
-
                   <ListGroup.Item>
                     <Button
-                      className='btn-block'
+                      className='w-full bg-blue-500 text-white hover:bg-blue-600 transition duration-300'
                       type='button'
                       disabled={product.countInStock === 0}
                       onClick={addToCartHandler}
@@ -158,33 +128,32 @@ const ProductScreen = () => {
               </Card>
             </Col>
           </Row>
-          <Row className='review'>
-            <Col md={6}>
-              <h2>Reviews</h2>
+          <Row className='review mx-4 lg:mx-12'>
+            <Col md={12}>
+              <h2 className='text-2xl font-bold mb-4'>Reviews</h2>
               {product.reviews.length === 0 && <Message>No Reviews</Message>}
               <ListGroup variant='flush'>
                 {product.reviews.map((review) => (
-                  <ListGroup.Item key={review._id}>
+                  <ListGroup.Item key={review._id} className='bg-gray-100 rounded-lg shadow-md p-4 mb-2'>
                     <strong>{review.name}</strong>
                     <Rating value={review.rating} />
-                    <p>{review.createdAt.substring(0, 10)}</p>
+                    <p className='text-sm text-gray-600'>{review.createdAt.substring(0, 10)}</p>
                     <p>{review.comment}</p>
                   </ListGroup.Item>
                 ))}
                 <ListGroup.Item>
-                  <h2>Write a Customer Review</h2>
-
+                  <h2 className='text-2xl font-bold mb-4'>Write a Customer Review</h2>
                   {loadingProductReview && <Loader />}
-
                   {userInfo ? (
-                    <Form onSubmit={submitHandler}>
-                      <Form.Group className='my-2' controlId='rating'>
+                    <Form onSubmit={submitHandler} className='space-y-4'>
+                      <Form.Group controlId='rating'>
                         <Form.Label>Rating</Form.Label>
                         <Form.Control
                           as='select'
                           required
                           value={rating}
                           onChange={(e) => setRating(e.target.value)}
+                          className='border-2 border-gray-300 rounded-md shadow-sm'
                         >
                           <option value=''>Select...</option>
                           <option value='1'>1 - Poor</option>
@@ -194,27 +163,29 @@ const ProductScreen = () => {
                           <option value='5'>5 - Excellent</option>
                         </Form.Control>
                       </Form.Group>
-                      <Form.Group className='my-2' controlId='comment'>
+                      <Form.Group controlId='comment'>
                         <Form.Label>Comment</Form.Label>
                         <Form.Control
                           as='textarea'
-                          row='3'
+                          rows='3'
                           required
                           value={comment}
                           onChange={(e) => setComment(e.target.value)}
+                          className='border-2 border-gray-300 rounded-md shadow-sm'
                         ></Form.Control>
                       </Form.Group>
                       <Button
                         disabled={loadingProductReview}
                         type='submit'
                         variant='primary'
+                        className='bg-blue-500 text-white hover:bg-blue-600 transition duration-300'
                       >
                         Submit
                       </Button>
                     </Form>
                   ) : (
                     <Message>
-                      Please <Link to='/login'>sign in</Link> to write a review
+                      Please <Link to='/login' className='text-blue-500'>sign in</Link> to write a review
                     </Message>
                   )}
                 </ListGroup.Item>

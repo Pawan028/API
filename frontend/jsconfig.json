@@ -1,0 +1,11 @@
+{
+    "compilerOptions": {
+      "allowJs": true, // Allow JavaScript files
+      "jsx": "react",  // Specify JSX type (React)
+      "noEmit": true,  // No output files should be created
+      "isolatedModules": true // Each file is treated as a separate module
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+  }
+  

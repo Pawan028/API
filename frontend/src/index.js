@@ -5,7 +5,7 @@ import './assets/styles/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider,} from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
@@ -24,54 +24,51 @@ import ProductListScreen from './screens/admin/ProductListScreen';
 import ProductEditScreen from './screens/admin/ProductEditScreen';
 import UserListScreen from './screens/admin/UserListScreen';
 import UserEditScreen from './screens/admin/UserEditScreen';
-import TrackOrderScreen from './screens/TrackOrderScreen'; // Import TrackOrderScreen
-import UpdateOrderLocation from './screens/admin/UpdateOrderLocation'; // Import UpdateOrderLocation
-import UpdateOrderStepsScreen from './screens/admin/UpdateOrderStepsScreen.jsx'; // Import AdminUpdateOrderStepsScreen0
+import TrackOrderScreen from './screens/TrackOrderScreen';
+import UpdateOrderStepsScreen from './screens/admin/UpdateOrderStepsScreen.jsx';
 import store from './store';
 import { Provider } from 'react-redux';
 import { PayPalScriptProvider } from '@paypal/react-paypal-js';
 import LocationScreen from './screens/admin/LocationScreen';
 import About from './screens/About.jsx';
 import ContactUs from './screens/ContactUs.jsx';
+import AdminDashboard from './screens/admin/Dashboard.jsx';
+
 const router = createBrowserRouter(
   createRoutesFromElements(
     <Route path='/' element={<App />}>
       <Route index={true} path='/' element={<HomeScreen />} />
       <Route path='/search/:keyword' element={<HomeScreen />} />
       <Route path='/page/:pageNumber' element={<HomeScreen />} />
-      <Route
-        path='/search/:keyword/page/:pageNumber'
-        element={<HomeScreen />}
-      />
+      <Route path='/search/:keyword/page/:pageNumber' element={<HomeScreen />} />
       <Route path='/product/:id' element={<ProductScreen />} />
       <Route path='/cart' element={<CartScreen />} />
       <Route path='/login' element={<LoginScreen />} />
       <Route path='/register' element={<RegisterScreen />} />
+
       {/* Registered users */}
       <Route path='' element={<PrivateRoute />}>
         <Route path='/shipping' element={<ShippingScreen />} />
-        <Route path='/about' element={<About/>}/>
-        <Route path='/contact'element={<ContactUs/>}/>
+        <Route path='/about' element={<About />} />
+        <Route path='/contact' element={<ContactUs />} />
         <Route path='/payment' element={<PaymentScreen />} />
         <Route path='/placeorder' element={<PlaceOrderScreen />} />
         <Route path='/order/:id' element={<OrderScreen />} />
         <Route path='/profile' element={<ProfileScreen />} />
-        <Route path='/track-order/:id' element={<TrackOrderScreen />} /> {/* Add TrackOrderScreen route */}
+        <Route path='/track-order/:id' element={<TrackOrderScreen />} />
       </Route>
+
       {/* Admin users */}
       <Route path='' element={<AdminRoute />}>
-        <Route path='/admin/orderlist' element={<OrderListScreen />} />
-        <Route path='/admin/productlist' element={<ProductListScreen />} />
-        <Route
-          path='/admin/productlist/:pageNumber'
-          element={<ProductListScreen />}
-        />
-        <Route path='/admin/userlist' element={<UserListScreen />} />
+        <Route path='/admin/dashboard' element={<AdminDashboard />}>
+          <Route path='userlist' element={<UserListScreen />} />
+          <Route path='productlist' element={<ProductListScreen />} />
+          <Route path='orderlist' element={<OrderListScreen />} />
+          <Route path='locations' element={<LocationScreen />} />
+        </Route>
         <Route path='/admin/product/:id/edit' element={<ProductEditScreen />} />
         <Route path='/admin/user/:id/edit' element={<UserEditScreen />} />
-        <Route path='/admin/locations' element={<LocationScreen />} />
-        <Route path='/admin/update-orders' element={<UpdateOrderLocation />} /> {/* Add UpdateOrderLocation route */}
-        <Route path="/admin/update-order/:id" element={<UpdateOrderStepsScreen />} /> {/* Add AdminUpdateOrderStepsScreen route */}
+        <Route path='/admin/update-order/:id' element={<UpdateOrderStepsScreen />} />
       </Route>
     </Route>
   )
@@ -79,15 +76,13 @@ const router = createBrowserRouter(
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
-  <React.StrictMode>
-    <HelmetProvider>
-      <Provider store={store}>
-        <PayPalScriptProvider deferLoading={true}>
-          <RouterProvider router={router} />
-        </PayPalScriptProvider>
-      </Provider>
-    </HelmetProvider>
-  </React.StrictMode>
+  <Provider store={store}>
+    <PayPalScriptProvider deferLoading={true}>
+      <HelmetProvider>
+        <RouterProvider router={router} />
+      </HelmetProvider>
+    </PayPalScriptProvider>
+  </Provider>
 );
 
 reportWebVitals();

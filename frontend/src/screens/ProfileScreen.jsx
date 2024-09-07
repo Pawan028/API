@@ -1,16 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Table, Form, Button, Row, Col } from 'react-bootstrap';
-import { useDispatch, useSelector } from 'react-redux';
 import { FaTimes } from 'react-icons/fa';
-import '../assets/styles/ProfileScreen.css';
-
+import { useDispatch, useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import Message from '../components/Message';
-import Loader from '../components/Loader';
 import { useProfileMutation } from '../slices/usersApiSlice';
 import { useGetMyOrdersQuery } from '../slices/ordersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { Link } from 'react-router-dom';
+import Loader from '../components/Loader';
+import Message from '../components/Message';
 
 const ProfileScreen = () => {
   const [name, setName] = useState('');
@@ -19,11 +16,9 @@ const ProfileScreen = () => {
   const [confirmPassword, setConfirmPassword] = useState('');
 
   const { userInfo } = useSelector((state) => state.auth);
-
   const { data: orders, isLoading, error } = useGetMyOrdersQuery();
 
-  const [updateProfile, { isLoading: loadingUpdateProfile }] =
-    useProfileMutation();
+  const [updateProfile, { isLoading: loadingUpdateProfile }] = useProfileMutation();
 
   useEffect(() => {
     setName(userInfo.name);
@@ -31,20 +26,14 @@ const ProfileScreen = () => {
   }, [userInfo.email, userInfo.name]);
 
   const dispatch = useDispatch();
+
   const submitHandler = async (e) => {
     e.preventDefault();
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
     } else {
       try {
-        const res = await updateProfile({
-          // NOTE: here we don't need the _id in the request payload as this is
-          // not used in our controller.
-          // _id: userInfo._id,
-          name,
-          email,
-          password,
-        }).unwrap();
+        const res = await updateProfile({ name, email, password }).unwrap();
         dispatch(setCredentials({ ...res }));
         toast.success('Profile updated successfully');
       } catch (err) {
@@ -54,115 +43,123 @@ const ProfileScreen = () => {
   };
 
   return (
-    <div className="profile-screen"> 
-    <Row>
-      <Col md={3}>
-        <h2>User Profile</h2>
+    <div className="container mx-auto py-10 px-5 md:px-0">
+      {/* Profile Section */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-10 mb-10">
+        <div className="p-6 bg-white shadow-2xl rounded-3xl transform hover:scale-105 transition duration-500">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">User Profile</h2>
+          <form onSubmit={submitHandler} className="space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Name</label>
+              <input
+                type="text"
+                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter name"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
+            </div>
 
-        <Form onSubmit={submitHandler}>
-          <Form.Group className='my-2' controlId='name'>
-            <Form.Label>Name</Form.Label>
-            <Form.Control
-              type='text'
-              placeholder='Enter name'
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Email</label>
+              <input
+                type="email"
+                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
 
-          <Form.Group className='my-2' controlId='email'>
-            <Form.Label>Email Address</Form.Label>
-            <Form.Control
-              type='email'
-              placeholder='Enter email'
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Password</label>
+              <input
+                type="password"
+                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Enter password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
 
-          <Form.Group className='my-2' controlId='password'>
-            <Form.Label>Password</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder='Enter password'
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+            <div>
+              <label className="block text-sm font-medium text-gray-700">Confirm Password</label>
+              <input
+                type="password"
+                className="mt-1 block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                placeholder="Confirm password"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
 
-          <Form.Group className='my-2' controlId='confirmPassword'>
-            <Form.Label>Confirm Password</Form.Label>
-            <Form.Control
-              type='password'
-              placeholder='Confirm password'
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-            ></Form.Control>
-          </Form.Group>
+            <button
+              type="submit"
+              className="w-full bg-indigo-600 text-white py-2 rounded-lg shadow-lg transform hover:scale-105 transition duration-300"
+            >
+              Update
+            </button>
 
-          <Button type='submit' variant='primary'>
-            Update
-          </Button>
-          {loadingUpdateProfile && <Loader />}
-        </Form>
-      </Col>
-      <Col md={9}>
-        <h2>My Orders</h2>
-        {isLoading ? (
-          <Loader />
-        ) : error ? (
-          <Message variant='danger'>
-            {error?.data?.message || error.error}
-          </Message>
-        ) : (
-          <Table striped hover responsive className='table-sm'>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>DATE</th>
-                <th>TOTAL</th>
-                <th>PAID</th>
-                <th>DELIVERED</th>
-                <th></th>
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order._id}>
-                  <td>{order._id}</td>
-                  <td>{order.createdAt.substring(0, 10)}</td>
-                  <td>₹{order.totalPrice}</td>
-                  <td>
-                    {order.isPaid ? (
-                      order.paidAt.substring(0, 10)
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td>
-                    {order.isDelivered ? (
-                      order.deliveredAt.substring(0, 10)
-                    ) : (
-                      <FaTimes style={{ color: 'red' }} />
-                    )}
-                  </td>
-                  <td>
-                    <Button
-                      as={Link}
-                      to={`/order/${order._id}`}
-                      className='btn-sm'
-                      variant='light'
-                    >
-                      Details
-                    </Button>
-                  </td>
+            {loadingUpdateProfile && <Loader />}
+          </form>
+        </div>
+
+        {/* Orders Section */}
+        <div className="md:col-span-2 p-6 bg-white shadow-2xl rounded-3xl transform hover:scale-105 transition duration-500">
+          <h2 className="text-2xl font-bold text-gray-800 mb-6">My Orders</h2>
+
+          {isLoading ? (
+            <Loader />
+          ) : error ? (
+            <Message variant="danger">{error?.data?.message || error.error}</Message>
+          ) : (
+            <table className="min-w-full bg-white shadow-lg rounded-2xl overflow-hidden">
+              <thead className="bg-gray-200">
+                <tr>
+                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">ID</th>
+                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">DATE</th>
+                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">TOTAL</th>
+                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">PAID</th>
+                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800">DELIVERED</th>
+                  <th className="py-3 px-5 text-left text-sm font-semibold text-gray-800"></th>
                 </tr>
-              ))}
-            </tbody>
-          </Table>
-        )}
-      </Col>
-    </Row>
+              </thead>
+              <tbody className="bg-white">
+                {orders.map((order) => (
+                  <tr key={order._id} className="border-b border-gray-200 hover:bg-gray-100">
+                    <td className="py-3 px-5">{order._id}</td>
+                    <td className="py-3 px-5">{order.createdAt.substring(0, 10)}</td>
+                    <td className="py-3 px-5">₹{order.totalPrice}</td>
+                    <td className="py-3 px-5">
+                      {order.isPaid ? (
+                        <span className="text-green-500 font-semibold">
+                          {order.paidAt.substring(0, 10)}
+                        </span>
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                    </td>
+                    <td className="py-3 px-5">
+                      {order.isDelivered ? (
+                        <span className="text-green-500 font-semibold">
+                          {order.deliveredAt.substring(0, 10)}
+                        </span>
+                      ) : (
+                        <FaTimes className="text-red-500" />
+                      )}
+                    </td>
+                    <td className="py-3 px-5">
+                      <Link to={`/order/${order._id}`} className="text-indigo-600 hover:underline">
+                        Details
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </div>
     </div>
   );
 };

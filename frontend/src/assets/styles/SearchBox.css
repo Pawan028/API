@@ -1,55 +1,84 @@
-/* SearchBox.css */
-.search-form {
-    display: flex;
-    align-items: center;
-    margin: 0 auto;
-    max-width: 600px;
-    padding: 10px;
-    transition: transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
+ /* SearchBox Container */
+.form-inline {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 5px;
+  border-radius: 25px;
+  background-color: #f8f9fa;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.form-inline:hover {
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+/* Search Input Field */
+.form-control {
+  flex-grow: 1;
+  border: none;
+  border-radius: 25px;
+  padding: 10px 15px;
+  font-size: 1rem;
+  background-color: #fff;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+  background-color: #e9ecef;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+  outline: none;
+}
+
+/* Search Button */
+.btn-outline-success {
+  border: 1px solid #28a745;
+  border-radius: 25px;
+  padding: 10px 20px;
+  font-size: 1rem;
+  color: #fff;
+  background-color: #28a745;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.btn-outline-success:hover {
+  background-color: #218838;
+  transform: scale(1.05);
+  border-color: #218838;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .form-inline {
+    max-width: 100%;
+    margin: 0 15px;
+    padding: 5px;
   }
-  
-  .search-form:hover {
-    transform: scale(1.02);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+
+  .form-control {
+    font-size: 0.9rem;
+    padding: 8px 12px;
   }
-  
-  .search-form .form-control {
-    border-radius: 25px;
-    border: 1px solid #ced4da;
-    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
-  }
-  
-  .search-form .form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
-    animation: pulse 1s infinite;
-  }
-  
-  .search-form .btn {
-    border-radius: 25px;
+
+  .btn-outline-success {
     padding: 8px 16px;
-    transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out, transform 0.3s ease-in-out;
+    font-size: 0.9rem;
   }
-  
-  .search-form .btn:hover {
-    background-color: #28a745;
-    border-color: #28a745;
-    transform: scale(1.05);
+}
+
+@media (max-width: 576px) {
+  .form-inline {
+    flex-direction: column;
   }
-  
-  .search-form .btn:focus {
-    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+
+  .form-control {
+    font-size: 0.9rem;
+    padding: 8px 12px; 
   }
-  
-  @keyframes pulse {
-    0% {
-      box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
-    }
-    50% {
-      box-shadow: 0 0 0 0.4rem rgba(38, 143, 255, 0.35);
-    }
-    100% {
-      box-shadow: 0 0 0 0.2rem rgba(38, 143, 255, 0.25);
-    }
+
+  .btn-outline-success {
+    padding: 8px 16px;
+    font-size: 0.9rem;
   }
-  
+}

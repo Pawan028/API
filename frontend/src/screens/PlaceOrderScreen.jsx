@@ -1,23 +1,20 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
-import { Button, Row, Col, ListGroup, Image, Card } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import Message from '../components/Message';
 import CheckoutSteps from '../components/CheckoutSteps';
 import Loader from '../components/Loader';
 import { clearCartItems } from '../slices/cartSlice';
-import { 
-  PAYMENT_METHOD_RAZORPAY_CARD, 
-  PAYMENT_METHOD_RAZORPAY_UPI, 
-  PAYMENT_METHOD_COD 
+import {
+  PAYMENT_METHOD_RAZORPAY_CARD,
+  PAYMENT_METHOD_RAZORPAY_UPI,
+  PAYMENT_METHOD_COD,
 } from '../constants';
 import axios from 'axios';
-import '../assets/styles/PlaceOrderScreen.css';
 
 const PlaceOrderScreen = () => {
   const [isLoading, setIsLoading] = useState(false);
-
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const cart = useSelector((state) => state.cart);
@@ -32,7 +29,6 @@ const PlaceOrderScreen = () => {
 
   const placeOrderHandler = async () => {
     setIsLoading(true);
-
     if (cart.paymentMethod === PAYMENT_METHOD_COD) {
       await handleCODPayment();
     } else if (
@@ -43,7 +39,6 @@ const PlaceOrderScreen = () => {
     } else {
       toast.error('Invalid payment method');
     }
-
     setIsLoading(false);
   };
 
@@ -70,15 +65,14 @@ const PlaceOrderScreen = () => {
       const { data: order } = await axios.post('/api/payments/initiate', {
         amount: cart.totalPrice,
       });
-
       const options = {
-        key: 'YOUR_RAZORPAY_KEY_ID', // Replace with your Razorpay Key ID
-        amount: order.amount, // Amount is in paise (1 INR = 100 paise)
+        key: 'YOUR_RAZORPAY_KEY_ID',
+        amount: order.amount,
         currency: 'INR',
         name: 'Your Store',
         description: 'Test Transaction',
-        image: '/logo.png', // Replace with your store logo
-        order_id: order.orderId, // Razorpay Order ID
+        image: '/logo.png',
+        order_id: order.orderId,
         handler: async (response) => {
           await verifyPaymentAndPlaceOrder(response);
         },
@@ -94,7 +88,6 @@ const PlaceOrderScreen = () => {
           color: '#3399cc',
         },
       };
-
       const razorpay = new window.Razorpay(options);
       razorpay.open();
     } catch (err) {
@@ -110,7 +103,6 @@ const PlaceOrderScreen = () => {
         razorpaySignature: paymentResult.razorpay_signature,
         orderId: cart.orderId,
       });
-
       const order = await axios.post('/api/orders', {
         orderItems: cart.cartItems,
         shippingAddress: cart.shippingAddress,
@@ -121,7 +113,6 @@ const PlaceOrderScreen = () => {
         totalPrice: cart.totalPrice,
         paymentResult: res.data.paymentResult,
       });
-
       dispatch(clearCartItems());
       navigate(`/order/${order.data._id}`);
     } catch (err) {
@@ -130,106 +121,93 @@ const PlaceOrderScreen = () => {
   };
 
   return (
-    <div>
+    <div className="animate-fadeIn p-4">
       <ToastContainer />
       <CheckoutSteps step1 step2 step3 step4 />
-      <Row>
-        <Col md={8}>
-          <ListGroup variant='flush'>
-            <ListGroup.Item>
-              <h2>Shipping</h2>
-              <p>
-                <strong>Address:</strong>
-                {cart.shippingAddress.address}, {cart.shippingAddress.city}{' '}
-                {cart.shippingAddress.pincode}, {cart.shippingAddress.country}
-              </p>
-            </ListGroup.Item>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="md:col-span-2 space-y-4">
+          <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
+            <h2 className="text-2xl font-bold">Shipping</h2>
+            <p>
+              <strong>Address:</strong> {cart.shippingAddress.address},{' '}
+              {cart.shippingAddress.city} {cart.shippingAddress.pincode},{' '}
+              {cart.shippingAddress.country}
+            </p>
+          </div>
 
-            <ListGroup.Item>
-              <h2>Payment Method</h2>
-              <strong>Method: </strong>
-              {cart.paymentMethod}
-            </ListGroup.Item>
+          <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
+            <h2 className="text-2xl font-bold">Payment Method</h2>
+            <p>
+              <strong>Method:</strong> {cart.paymentMethod}
+            </p>
+          </div>
 
-            <ListGroup.Item>
-              <h2>Order Items</h2>
-              {cart.cartItems.length === 0 ? (
-                <Message>Your cart is empty</Message>
-              ) : (
-                <ListGroup variant='flush'>
-                  {cart.cartItems.map((item, index) => (
-                    <ListGroup.Item key={index}>
-                      <Row>
-                        <Col md={1}>
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            fluid
-                            rounded
-                          />
-                        </Col>
-                        <Col>
-                          <Link to={`/product/${item.product}`}>
-                            {item.name}
-                          </Link>
-                        </Col>
-                        <Col md={4}>
-                          {item.qty} x ₹{item.price} = ₹
-                          {(item.qty * item.price).toFixed(2)}
-                        </Col>
-                      </Row>
-                    </ListGroup.Item>
-                  ))}
-                </ListGroup>
-              )}
-            </ListGroup.Item>
-          </ListGroup>
-        </Col>
-        <Col md={4}>
-          <Card>
-            <ListGroup variant='flush'>
-              <ListGroup.Item>
-                <h2>Order Summary</h2>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Items</Col>
-                  <Col>₹{cart.itemsPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Shipping</Col>
-                  <Col>₹{cart.shippingPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Tax</Col>
-                  <Col>₹{cart.taxPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Row>
-                  <Col>Total</Col>
-                  <Col>₹{cart.totalPrice}</Col>
-                </Row>
-              </ListGroup.Item>
-              <ListGroup.Item>
-                <Button
-                  type='button'
-                  className='btn-block'
-                  disabled={cart.cartItems.length === 0 || isLoading}
-                  onClick={placeOrderHandler}
-                >
-                  Place Order
-                </Button>
-                {isLoading && <Loader />}
-              </ListGroup.Item>
-            </ListGroup>
-          </Card>
-        </Col>
-      </Row>
+          <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
+            <h2 className="text-2xl font-bold">Order Items</h2>
+            {cart.cartItems.length === 0 ? (
+              <Message>Your cart is empty</Message>
+            ) : (
+              <ul>
+                {cart.cartItems.map((item, index) => (
+                  <li key={index} className="flex items-center py-2">
+                    <img
+                      src={item.image}
+                      alt={item.name}
+                      className="w-16 h-16 rounded-lg transform hover:scale-110 transition-transform duration-200"
+                    />
+                    <div className="flex-1 px-4">
+                      <Link
+                        to={`/product/${item.product}`}
+                        className="text-blue-600 hover:underline"
+                      >
+                        {item.name}
+                      </Link>
+                    </div>
+                    <div className="text-right">
+                      {item.qty} x ₹{item.price} = ₹
+                      {(item.qty * item.price).toFixed(2)}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+        </div>
+
+        <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
+          <h2 className="text-2xl font-bold">Order Summary</h2>
+          <div className="my-4">
+            <div className="flex justify-between py-2">
+              <span>Items</span>
+              <span>₹{cart.itemsPrice}</span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span>Shipping</span>
+              <span>₹{cart.shippingPrice}</span>
+            </div>
+            <div className="flex justify-between py-2">
+              <span>Tax</span>
+              <span>₹{cart.taxPrice}</span>
+            </div>
+            <div className="flex justify-between py-2 font-bold">
+              <span>Total</span>
+              <span>₹{cart.totalPrice}</span>
+            </div>
+          </div>
+          <button
+            className={`w-full py-3 mt-4 bg-blue-600 text-white rounded-lg transform hover:scale-105 transition-transform duration-200 ${
+              cart.cartItems.length === 0 || isLoading
+                ? 'opacity-50 cursor-not-allowed'
+                : ''
+            }`}
+            disabled={cart.cartItems.length === 0 || isLoading}
+            onClick={placeOrderHandler}
+          >
+            Place Order
+          </button>
+          {isLoading && <Loader />}
+        </div>
+      </div>
     </div>
   );
 };

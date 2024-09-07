@@ -1,0 +1,97 @@
+.admin-dashboard {
+    padding: 20px;
+    background-color: #f0f2f5;
+    margin-top: 20px; /* Margin from the top */
+  }
+  
+  .welcome-row {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  
+  .welcome {
+    font-size: 2.5rem;
+    font-weight: bold;
+    color: #4e73df;
+    /* Ensure no sliding animation */
+  }
+  
+  .welcome-subtext {
+    font-size: 1.2rem;
+    color: #6c757d;
+  }
+  
+  /* Responsive card grid layout */
+  .card-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+  
+  .admin-card {
+    cursor: pointer;
+    transition: transform 0.3s, box-shadow 0.3s;
+    border-radius: 15px;
+    background: linear-gradient(145deg, #ffffff, #e6e6e6);
+    box-shadow: 10px 10px 20px #c9c9c9, -10px -10px 20px #ffffff;
+    width: 100%;
+    max-width: 300px; /* Ensures cards are not too wide on large screens */
+  }
+  
+  .admin-card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  .admin-card .card-title {
+    font-size: 1.5rem;
+    color: #4e73df;
+    text-align: center;
+    margin-bottom: 15px;
+  }
+  
+  .admin-card .card-text {
+    font-size: 1rem;
+    color: #6c757d;
+    text-align: center;
+  }
+  
+  .main-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 15px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 768px) {
+    .welcome-message {
+      font-size: 2rem;
+    }
+  
+    .welcome-subtext {
+      font-size: 1rem;
+    }
+  
+    .admin-card .card-title {
+      font-size: 1.3rem;
+    }
+  
+    .admin-card .card-text {
+      font-size: 0.9rem;
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .card-grid {
+      flex-direction: column;
+      align-items: center;
+    }
+  
+    .admin-card {
+      max-width: 100%;
+    }
+  }
+  

@@ -1,0 +1,98 @@
+ /* SplashScreen.css */
+
+.splash-container {
+    display: flex;
+    flex-direction: column; /* Stack elements vertically */
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background:linear-gradient(to right,rgb(0, 81, 255), rgb(0, 183, 255), rgb(24, 168, 208));;
+    overflow: hidden;
+  }
+
+.splash-logo {
+    width: 20vw; /* The logo will occupy 20% of the viewport width */
+    max-width: 150px; /* Maximum width of the logo */
+    height: 20vw; /* Match the height to the width for a perfect circle */
+    max-height: 150px; /* Ensure maximum height matches max width */
+    border-radius: 50%; /* Make the logo perfectly circular */
+    animation: logoAnimation 3s ease-in-out infinite; /* Existing animation */
+    position: relative; /* For positioning the rotating border */
+  }
+
+/* Circular rotating border (loading effect) */
+.splash-logo::before {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    width: 100%;
+    height: 100%;
+    border: 5px solid transparent; /* Transparent border */
+    border-top: 5px solid #1616bf; /* Visible color for top border */
+    border-radius: 50%; /* Make the border circular */
+    animation: rotate 2s linear infinite; /* Continuous rotation */
+    box-sizing: border-box; /* Ensure proper sizing of the border */
+  }
+
+/* Animation to scale the logo size */
+@keyframes logoAnimation {
+    0%, 100% {
+      transform: scale(1); /* Original size */
+    }
+    50% {
+      transform: scale(1.1); /* Slightly larger size */
+    }
+  }
+
+/* Animation for rotating border */
+@keyframes rotate {
+    0% {
+      transform: rotate(0deg); /* Start position */
+    }
+    100% {
+      transform: rotate(360deg); /* Full rotation */
+    }
+  }
+
+/* Loading text styling */
+.splash-loading {
+    margin-top: 20px; /* Space between logo and text */
+    font-size: 1.5rem;
+    color: #3498db; /* Match the border color */
+    font-family: Arial, sans-serif;
+    animation: fadeInOut 2s ease-in-out infinite;
+  }
+
+/* Animation to fade the loading text in and out */
+@keyframes fadeInOut {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+/* Ensure responsiveness */
+@media (max-width: 768px) {
+    .splash-logo {
+      width: 30vw; /* Larger percentage for smaller screens */
+      max-width: 100px;
+      height: 30vw; /* Match height to width for perfect circle */
+      max-height: 100px;
+    }
+
+    .splash-loading {
+      font-size: 1.2rem; /* Adjust text size for smaller screens */
+    }
+  }
+
+@media (max-width: 480px) {
+    .splash-logo {
+      width: 40vw; /* Even larger percentage for very small screens */
+      max-width: 80px;
+      height: 40vw; /* Match height to width for perfect circle */
+      max-height: 80px;
+    }
+
+    .splash-loading {
+      font-size: 1rem; /* Adjust text size for very small screens */
+    }
+  }

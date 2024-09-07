@@ -1,0 +1,18 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+@keyframes moveBackground {
+    0% {
+      background-position: 0 0;
+    }
+    100% {
+      background-position: 100% 100%;
+    }
+  }
+  
+  .bg-moving-pattern {
+    background: url('https://img.freepik.com/free-vector/abstract-pattern-design_1053-539.jpg?ga=GA1.1.870505841.1725646127&semt=ais_hybrid');
+    background-size: cover;
+    animation: moveBackground 20s linear infinite;
+  }
+  

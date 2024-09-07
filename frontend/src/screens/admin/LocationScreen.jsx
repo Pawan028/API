@@ -3,6 +3,7 @@ import { Button, Table, Form, Row, Col } from 'react-bootstrap';
 import { useListLocationsQuery, useAddLocationMutation, useDeleteLocationMutation, useUpdateLocationMutation } from '../../slices/apiSlice';
 import Loader from '../../components/Loader';
 import Message from '../../components/Message';
+import "../../assets/styles/LocationScreen.css"; // Updated CSS import
 
 const AdminLocationScreen = () => {
   const [city, setCity] = useState('');
@@ -55,16 +56,16 @@ const AdminLocationScreen = () => {
   
 
   return (
-    <>
+    <div className='location-container'>
       <Row className='align-items-center'>
         <Col>
-          <h1>Manage Locations</h1>
+          <h1 className='location-title'>Manage Locations</h1>
         </Col>
       </Row>
       <Row>
         <Col md={4}>
-          <h2>{selectedId ? 'Update Location' : 'Add New Location'}</h2>
-          <Form onSubmit={selectedId ? updateLocationHandler : addLocationHandler}>
+          <h2 className='location-subtitle'>{selectedId ? 'Update Location' : 'Add New Location'}</h2>
+          <Form onSubmit={selectedId ? updateLocationHandler : addLocationHandler} className='location-form'>
             <Form.Group controlId='city'>
               <Form.Label>City</Form.Label>
               <Form.Control
@@ -73,6 +74,7 @@ const AdminLocationScreen = () => {
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
                 required
+                className='location-input'
               />
             </Form.Group>
 
@@ -84,6 +86,7 @@ const AdminLocationScreen = () => {
                 value={state}
                 onChange={(e) => setState(e.target.value)}
                 required
+                className='location-input'
               />
             </Form.Group>
 
@@ -95,29 +98,30 @@ const AdminLocationScreen = () => {
                 value={pincode}
                 onChange={(e) => setPincode(e.target.value)}
                 required
+                className='location-input'
               />
             </Form.Group>
 
-            <Button type='submit' variant='primary'>
+            <Button type='submit' variant='primary' className='location-btn'>
               {selectedId ? 'Update Location' : 'Add Location'}
             </Button>
           </Form>
         </Col>
         <Col md={8}>
-          <h2>Locations</h2>
+          <h2 className='location-subtitle'>Locations</h2>
           {isLoading ? (
             <Loader />
           ) : error ? (
             <Message variant='danger'>{error.message}</Message>
           ) : (
-            <Table striped bordered hover responsive className='table-sm'>
+            <Table striped bordered hover responsive className='location-table'>
               <thead>
                 <tr>
                   <th>ID</th>
                   <th>CITY</th>
                   <th>STATE</th>
                   <th>PINCODE</th>
-                  <th></th>
+                  <th>ACTIONS</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,14 +134,14 @@ const AdminLocationScreen = () => {
                     <td>
                       <Button
                         variant='danger'
-                        className='btn-sm'
+                        className='btn-sm location-btn-delete'
                         onClick={() => deleteHandler(location._id)}
                       >
                         Delete
                       </Button>
                       <Button
                         variant='warning'
-                        className='btn-sm'
+                        className='btn-sm location-btn-edit'
                         onClick={() => {
                           setCity(location.city);
                           setState(location.state);
@@ -155,7 +159,7 @@ const AdminLocationScreen = () => {
           )}
         </Col>
       </Row>
-    </>
+    </div>
   );
 };
 

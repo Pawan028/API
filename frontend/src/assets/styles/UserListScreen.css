@@ -1,0 +1,98 @@
+/* UserListScreen.css */
+
+/* Heading Styles */
+h1 {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  
+  /* Table Styles */
+  .table {
+    margin: 0 auto;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+  
+  .table-sm th, .table-sm td {
+    padding: 12px;
+    text-align: center;
+  }
+  
+  .table-sm thead {
+    background-color: #f8f9fa;
+  }
+  
+  .table-sm thead th {
+    font-weight: bold;
+    color: #333;
+  }
+  
+  .table-sm tbody tr:nth-child(even) {
+    background-color: #f2f2f2;
+  }
+  
+  .table-sm tbody tr:hover {
+    background-color: #e9ecef;
+  }
+  
+  .table-sm td a {
+    color: #007bff;
+    text-decoration: none;
+  }
+  
+  .table-sm td a:hover {
+    text-decoration: underline;
+  }
+  
+  /* Button Styles */
+  .btn-sm {
+    padding: 5px 10px;
+    font-size: 0.875rem;
+    border-radius: 4px;
+  }
+  
+  .btn-light {
+    background-color: #f8f9fa;
+    border-color: #ced4da;
+  }
+  
+  .btn-light:hover {
+    background-color: #e2e6ea;
+  }
+  
+  .btn-danger {
+    background-color: #dc3545;
+    border-color: #dc3545;
+  }
+  
+  .btn-danger:hover {
+    background-color: #c82333;
+    border-color: #bd2130;
+  }
+  
+  /* Icon Styles */
+  .btn-light .fa-edit, .btn-danger .fa-trash {
+    font-size: 1.2rem;
+    vertical-align: middle;
+  }
+  
+  /* Loader and Message Components */
+  .loader {
+    margin: 20px 0;
+    text-align: center;
+  }
+  
+  .message {
+    margin: 20px 0;
+    padding: 10px;
+    border-radius: 8px;
+  }
+  
+  .message.danger {
+    background-color: #f8d7da;
+    color: #721c24;
+  }
+  

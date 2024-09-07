@@ -1,17 +1,24 @@
-// AdminOrderScreen.js
+import React, { useState,useEffect } from 'react';
 import { Table, Button } from 'react-bootstrap';
 import { FaTimes } from 'react-icons/fa';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
 import { useGetOrdersQuery, useUpdateOrderPaymentMutation, useUpdateOrderDeliveryMutation } from '../../slices/ordersApiSlice';
 import { Link } from 'react-router-dom';
-import { useState } from 'react';
+import "../../assets/styles/OrderListScreen.css"; // Updated CSS import
 
 const OrderListScreen = () => {
-  const { data: orders, isLoading, error, refetch } = useGetOrdersQuery();
+  const { data: orders = [], isLoading, error, refetch } = useGetOrdersQuery();
   const [updateOrderPayment] = useUpdateOrderPaymentMutation();
   const [updateOrderDelivery] = useUpdateOrderDeliveryMutation();
   const [setSelectedOrder] = useState(null);
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  // Sort orders to show latest first
+  const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
 
   const handlePaymentUpdate = async (orderId) => {
     await updateOrderPayment({ id: orderId, isPaid: true });
@@ -28,8 +35,8 @@ const OrderListScreen = () => {
   };
 
   return (
-    <>
-      <h1>Orders</h1>
+    <div className='order-container'>
+      <h1 className='order-title'>Orders</h1>
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -51,7 +58,7 @@ const OrderListScreen = () => {
             </tr>
           </thead>
           <tbody>
-            {orders.map((order) => (
+            {sortedOrders.map((order) => (
               <tr key={order._id} onClick={() => handleSelectOrder(order)}>
                 <td>{order._id}</td>
                 <td>{order.user && order.user.name}</td>
@@ -59,16 +66,16 @@ const OrderListScreen = () => {
                 <td>₹{order.totalPrice}</td>
                 <td>
                   {order.isPaid ? (
-                    order.paidAt.substring(0, 10)
+                    <span className='badge paid'>{order.paidAt.substring(0, 10)}</span>
                   ) : (
-                    <FaTimes style={{ color: 'red' }} />
+                    <span className='badge not-paid'><FaTimes /></span>
                   )}
                 </td>
                 <td>
                   {order.isDelivered ? (
-                    order.deliveredAt.substring(0, 10)
+                    <span className='badge delivered'>{order.deliveredAt.substring(0, 10)}</span>
                   ) : (
-                    <FaTimes style={{ color: 'red' }} />
+                    <span className='badge not-delivered'><FaTimes /></span>
                   )}
                 </td>
                 <td>
@@ -106,7 +113,7 @@ const OrderListScreen = () => {
           </tbody>
         </Table>
       )}
-    </>
+    </div>
   );
 };
 

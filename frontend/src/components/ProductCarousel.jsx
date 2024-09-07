@@ -11,7 +11,6 @@ const getRandomProducts = (products, count) => {
 
 const ProductCarousel = () => {
   const { data: products, isLoading, error } = useGetTopProductsQuery();
-
   const randomProducts = products ? getRandomProducts(products, 5) : [];
 
   return isLoading ? null : error ? (
@@ -24,10 +23,16 @@ const ProductCarousel = () => {
             {randomProducts.map((product) => (
               <Carousel.Item key={product._id}>
                 <Link to={`/product/${product._id}`}>
-                  <Image src={product.image} alt={product.name} fluid className='carousel-image' />
+                  <Image
+                    src={product.image}
+                    alt={product.name}
+                    fluid
+                    className='carousel-image'
+                  />
                   <Carousel.Caption className='carousel-caption'>
                     <h2>{product.name} (₹{product.price})</h2>
                     <p className='carousel-description'>{product.description}</p>
+                    <button className='carousel-button'>See More</button>
                   </Carousel.Caption>
                 </Link>
               </Carousel.Item>
@@ -35,11 +40,8 @@ const ProductCarousel = () => {
           </Carousel>
         </div>
       )}
-      <div className='welcome-message'>
-        <h1>Welcome to EcoMart</h1>
-        <p>Your one-stop shop for fresh and organic groceries!</p>
-        <h2>Experience the best quality and service!</h2>
-      </div>
+
+      
     </div>
   );
 };

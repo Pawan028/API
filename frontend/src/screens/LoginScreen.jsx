@@ -3,7 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/Loader';
-import FormContainer from '../components/FormContainer';
+ 
 
 import { useLoginMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
@@ -42,46 +42,56 @@ const LoginScreen = () => {
   };
 
   return (
-    <FormContainer>
-      <h1>Sign In</h1>
+    <div className="relative min-h-screen flex items-center justify-center bg-moving-pattern bg-cover bg-center">
+      <div className="absolute inset-0 bg-black opacity-40"></div>
+      <div className="relative z-10 bg-white p-8 rounded-xl shadow-xl transform transition-transform hover:scale-105 hover:shadow-2xl max-w-sm mx-auto">
+        <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Sign In</h1>
 
-      <Form onSubmit={submitHandler}>
-        <Form.Group className='my-2' controlId='email'>
-          <Form.Label>Email Address</Form.Label>
-          <Form.Control
-            type='email'
-            placeholder='Enter email'
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+        <Form onSubmit={submitHandler}>
+          <Form.Group className='my-4' controlId='email'>
+            <Form.Label className='text-lg font-semibold'>Email Address</Form.Label>
+            <Form.Control
+              type='email'
+              placeholder='Enter email'
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className='mt-1 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-transform duration-300 ease-in-out'
+            ></Form.Control>
+          </Form.Group>
 
-        <Form.Group className='my-2' controlId='password'>
-          <Form.Label>Password</Form.Label>
-          <Form.Control
-            type='password'
-            placeholder='Enter password'
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
+          <Form.Group className='my-4' controlId='password'>
+            <Form.Label className='text-lg font-semibold'>Password</Form.Label>
+            <Form.Control
+              type='password'
+              placeholder='Enter password'
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className='mt-1 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-transform duration-300 ease-in-out'
+            ></Form.Control>
+          </Form.Group>
 
-        <Button disabled={isLoading} type='submit' variant='primary'>
-          Sign In
-        </Button>
+          <Button
+            disabled={isLoading}
+            type='submit'
+            variant='primary'
+            className='w-full py-2 rounded-lg bg-indigo-600 text-white font-semibold shadow-md hover:bg-indigo-700 transition-transform duration-300 ease-in-out'
+          >
+            Sign In
+          </Button>
 
-        {isLoading && <Loader />}
-      </Form>
+          {isLoading && <Loader />}
+        </Form>
 
-      <Row className='py-3'>
-        <Col>
-          New Customer?{' '}
-          <Link to={redirect ? `/register?redirect=${redirect}` : '/register'}>
-            Register
-          </Link>
-        </Col>
-      </Row>
-    </FormContainer>
+        <Row className='py-3'>
+          <Col className='text-center'>
+            New Customer?{' '}
+            <Link to={redirect ? `/register?redirect=${redirect}` : '/register'} className='text-indigo-600 hover:underline'>
+              Register
+            </Link>
+          </Col>
+        </Row>
+      </div>
+    </div>
   );
 };
 

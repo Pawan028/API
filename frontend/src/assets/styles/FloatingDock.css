@@ -1,0 +1,10 @@
+.floating-dock {
+    position: relative; /* Ensure proper positioning */
+    bottom: 60px; /* Adjust based on the desired gap from the bottom */
+    background-color: #4b5563; /* Dark background */
+    border-radius: 10px; /* Rounded corners */
+    padding: 15px; /* Padding for internal elements */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Subtle shadow */
+    z-index: 1000; /* Keep it above other content */
+  }
+  

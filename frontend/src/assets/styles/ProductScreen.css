@@ -1,0 +1,16 @@
+/* Product image styling for responsive design */
+.product-image {
+    width: 100%; /* Make the image take up the full width of its container */
+    max-width: 500px; /* Set a maximum width for larger screens */
+    height: auto; /* Maintain the aspect ratio */
+    object-fit: cover; /* Ensure the image covers the container without stretching */
+    border-radius: 10px;
+  }
+  
+  /* Media query for smaller screens */
+  @media (max-width: 768px) {
+    .product-image {
+      max-width: 100%; /* Allow the image to take up the full width of smaller screens */
+    }
+  }
+  
