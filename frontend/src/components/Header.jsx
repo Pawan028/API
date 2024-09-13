@@ -78,7 +78,7 @@ const Header = () => {
   return (
     <>
       {/* Header Section */}
-      <header className="bg-emerald-500 text-white shadow-md py-2 fixed top-0 left-0 w-full z-50 h-20">
+      <header className="bg-emerald-500 text-white shadow-md top-0 left-0 w-full  h-20">
         <div className="container mx-auto px-4 flex justify-between items-center h-full">
           {/* Logo */}
           <Link to="/" className="flex items-center">
