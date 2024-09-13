@@ -1,62 +1,100 @@
-import { useEffect } from 'react';
+import { useState } from 'react'; 
 import { Link, useParams } from 'react-router-dom';
-import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
+import AdminUpdateOrderStepsScreen from './admin/UpdateOrderStepsScreen'; // Import the AdminUpdateOrderStepsScreen component
 import {
   useDeliverOrderMutation,
   useGetOrderDetailsQuery,
-  useGetPaypalClientIdQuery,
-  usePayOrderMutation,
-} from '../slices/ordersApiSlice';
+  useCreateRazorpayOrderMutation,
+  useVerifyPaymentMutation
+} from '../slices/ordersApiSlice'; // Razorpay-related mutation hooks
 
 const OrderScreen = () => {
   const { id: orderId } = useParams();
-
   const { data: order, refetch, isLoading, error } = useGetOrderDetailsQuery(orderId);
-  const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
   const [deliverOrder, { isLoading: loadingDeliver }] = useDeliverOrderMutation();
+  const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
+  const [verifyPayment] = useVerifyPaymentMutation();
+  const [loadingPayOnline, setLoadingPayOnline] = useState(false); // State for Razorpay online payment loading
   const { userInfo } = useSelector((state) => state.auth);
 
-  const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
-  const { data: paypal, isLoading: loadingPayPal, error: errorPayPal } = useGetPaypalClientIdQuery();
-
-  useEffect(() => {
-    if (!errorPayPal && !loadingPayPal && paypal.clientId) {
-      const loadPaypalScript = async () => {
-        paypalDispatch({
-          type: 'resetOptions',
-          value: { 'client-id': paypal.clientId, currency: 'USD' },
-        });
-        paypalDispatch({ type: 'setLoadingStatus', value: 'pending' });
-      };
-      if (order && !order.isPaid && !window.paypal) {
-        loadPaypalScript();
-      }
-    }
-  }, [errorPayPal, loadingPayPal, order, paypal, paypalDispatch]);
-
-  const onApprove = (data, actions) =>
-    actions.order.capture().then(async (details) => {
-      try {
-        await payOrder({ orderId, details });
-        refetch();
-        toast.success('Order is paid');
-      } catch (err) {
-        toast.error(err?.data?.message || err.error);
-      }
+  // Function to load Razorpay script
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
     });
-
-  const onError = (err) => {
-    toast.error(err.message);
   };
 
-  const createOrder = (data, actions) =>
-    actions.order.create({
-      purchase_units: [{ amount: { value: order.totalPrice } }],
-    }).then((orderID) => orderID);
+  // Function to handle successful Razorpay payment
+  const handlePaymentSuccess = async (response, razorpayOrderId) => {
+    try {
+      const verifyResponse = await verifyPayment({
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+        orderId: orderId,
+      }).unwrap();
+
+      if (verifyResponse.success) {
+        refetch();  // Refetch the order details to update payment status
+        toast.success('Payment successful, order is now paid.');
+      } else {
+        toast.error('Payment verification failed. Please try again.');
+      }
+    } catch (error) {
+      toast.error('Payment verification failed.');
+    }
+    setLoadingPayOnline(false);
+  };
+
+  // Function to handle Razorpay payment
+  const handleRazorpayPayment = async () => {
+    setLoadingPayOnline(true);
+
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      toast.error('Failed to load Razorpay SDK. Please try again later.');
+      setLoadingPayOnline(false);
+      return;
+    }
+
+    try {
+      // First, create the Razorpay order in the backend
+      const razorpayOrder = await createRazorpayOrder({
+        amount: order.totalPrice * 100, // Amount in paise
+      }).unwrap();
+
+      const options = {
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID, // Make sure this is set in your .env file
+        amount: razorpayOrder.amount,
+        currency: 'INR',
+        name: 'Your Business Name',
+        description: 'Pay for your order',
+        order_id: razorpayOrder.id,
+        handler: (response) => handlePaymentSuccess(response, razorpayOrder.id),
+        prefill: {
+          name: order.user.name,
+          email: order.user.email,
+        },
+        theme: {
+          color: '#3399cc',
+        },
+      };
+
+      const razorpay = new window.Razorpay(options);
+      razorpay.open();
+    } catch (error) {
+      toast.error('An error occurred while processing your payment.');
+      setLoadingPayOnline(false);
+    }
+  };
 
   const deliverHandler = async () => {
     await deliverOrder(orderId);
@@ -72,6 +110,7 @@ const OrderScreen = () => {
       <h1 className="text-3xl font-bold mb-6">Order {order._id}</h1>
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div className="md:col-span-2">
+          {/* Shipping Info */}
           <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
             <h2 className="text-2xl font-semibold mb-4">Shipping</h2>
             <p><strong>Name:</strong> {order.user.name}</p>
@@ -87,15 +126,9 @@ const OrderScreen = () => {
             ) : (
               <Message variant="danger">Not Delivered</Message>
             )}
-            {userInfo && !userInfo.isAdmin && (
-              <div className="mt-4">
-                <Link to={`/track-order/${order._id}`} className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
-                  Track Order Status
-                </Link>
-              </div>
-            )}
           </div>
 
+          {/* Payment Method */}
           <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
             <h2 className="text-2xl font-semibold mb-4">Payment Method</h2>
             <p><strong>Method:</strong> {order.paymentMethod}</p>
@@ -104,9 +137,26 @@ const OrderScreen = () => {
             ) : (
               <Message variant="danger">Not Paid</Message>
             )}
+            {order.paymentResult && order.paymentResult.status && (
+              <p><strong>Payment Status:</strong> {order.paymentResult.status}</p>
+            )}
+            {order.paymentResult && order.paymentResult.update_time && (
+              <p><strong>Payment Update Time:</strong> {new Date(order.paymentResult.update_time).toLocaleString()}</p>
+            )}
           </div>
 
-          <div className="bg-white rounded-lg shadow-lg p-4">
+          {/* Razorpay Info (if available) */}
+          {order.razorpay && (
+            <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
+              <h2 className="text-2xl font-semibold mb-4">Razorpay Payment</h2>
+              <p><strong>Razorpay Order ID:</strong> {order.razorpay.orderId}</p>
+              <p><strong>Razorpay Payment ID:</strong> {order.razorpay.paymentId}</p>
+              <p><strong>Verified:</strong> {order.razorpay.verified ? 'Yes' : 'No'}</p>
+            </div>
+          )}
+
+          {/* Order Items */}
+          <div className="bg-white rounded-lg shadow-lg p-4 mb-6">
             <h2 className="text-2xl font-semibold mb-4">Order Items</h2>
             {order.orderItems.length === 0 ? (
               <Message>Order is empty</Message>
@@ -128,6 +178,7 @@ const OrderScreen = () => {
           </div>
         </div>
 
+        {/* Order Summary */}
         <div>
           <div className="bg-white rounded-lg shadow-lg p-4">
             <h2 className="text-2xl font-semibold mb-4">Order Summary</h2>
@@ -149,19 +200,26 @@ const OrderScreen = () => {
                 <span>₹{order.totalPrice}</span>
               </li>
 
-              {!order.isPaid && (
+              {/* Pay Online button for COD */}
+              {!order.isPaid && order.paymentMethod === 'Cash on Delivery' && (
                 <li className="mt-4">
-                  {loadingPay && <Loader />}
-                  {isPending ? <Loader /> : (
-                    <PayPalButtons createOrder={createOrder} onApprove={onApprove} onError={onError} />
-                  )}
+                  {loadingPayOnline && <Loader />}
+                  <button
+                    onClick={handleRazorpayPayment}
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Pay Online
+                  </button>
                 </li>
               )}
 
               {loadingDeliver && <Loader />}
               {userInfo && userInfo.isAdmin && order.isPaid && !order.isDelivered && (
                 <li className="mt-4">
-                  <button onClick={deliverHandler} className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition">
+                  <button
+                    onClick={deliverHandler}
+                    className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition"
+                  >
                     Mark As Delivered
                   </button>
                 </li>
@@ -169,6 +227,23 @@ const OrderScreen = () => {
             </ul>
           </div>
         </div>
+      </div>
+
+      {/* Admin Order Steps */}
+      {userInfo && userInfo.isAdmin && (
+        <div className="mt-6">
+          <AdminUpdateOrderStepsScreen />
+        </div>
+      )}
+
+      {/* Timestamps for order status */}
+      <div className="bg-white rounded-lg shadow-lg p-4 mt-6">
+        <h2 className="text-2xl font-semibold mb-4">Order Timestamps</h2>
+        <p><strong>Confirmed:</strong> {order.timestamps.confirmed ? new Date(order.timestamps.confirmed).toLocaleString() : 'N/A'}</p>
+        <p><strong>Placed:</strong> {order.timestamps.placed ? new Date(order.timestamps.placed).toLocaleString() : 'N/A'}</p>
+        <p><strong>Shipped:</strong> {order.timestamps.shipped ? new Date(order.timestamps.shipped).toLocaleString() : 'N/A'}</p>
+        <p><strong>Out for Delivery:</strong> {order.timestamps.outForDelivery ? new Date(order.timestamps.outForDelivery).toLocaleString() : 'N/A'}</p>
+        <p><strong>Delivered:</strong> {order.timestamps.delivered ? new Date(order.timestamps.delivered).toLocaleString() : 'N/A'}</p>
       </div>
     </div>
   );

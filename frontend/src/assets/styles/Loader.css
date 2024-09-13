@@ -2,9 +2,7 @@
   height: 100%;
 }
 
-body {
-  background-image: radial-gradient(circle farthest-corner at center, #1eafe3 0%, #dcdde6 90%);
-}
+ 
 
 .loader {
   position: absolute;

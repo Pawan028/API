@@ -46,15 +46,12 @@ const HomeScreen = () => {
     }
   }, [keyword]);
 
-  const scrollLeft = (ref) => {
-    if (ref.current) {
-      ref.current.scrollBy({ left: -300, behavior: 'smooth' });
-    }
-  };
-
-  const scrollRight = (ref) => {
-    if (ref.current) {
-      ref.current.scrollBy({ left: 300, behavior: 'smooth' });
+  const scroll = (direction) => {
+    if (carouselRef.current) {
+      carouselRef.current.scrollBy({
+        left: direction === 'left' ? -300 : 300,
+        behavior: 'smooth',
+      });
     }
   };
 
@@ -62,7 +59,7 @@ const HomeScreen = () => {
     <>
       <Meta title="Welcome to EcoMart | Home" />
 
-      <div className="relative z-10 w-full h-full bg-gray-100">
+      <div className="relative z-10 w-full h-full "> {/* Light green background */}
         {/* Hero Section with Image */}
         <div className="hero-section py-8">
           {!keyword ? (
@@ -70,7 +67,7 @@ const HomeScreen = () => {
               <ProductCarousel products={highRatedProducts} />
             </div>
           ) : (
-            <Link to="/" className="btn btn-light bg-white text-blue-500 py-2 px-4 rounded shadow-md hover:bg-gray-200 transition duration-300">
+            <Link to="/" className="btn btn-light bg-white text-green-600 py-2 px-4 rounded shadow-md hover:bg-gray-200 transition duration-300">
               Go Back
             </Link>
           )}
@@ -84,7 +81,7 @@ const HomeScreen = () => {
               className="category-item cursor-pointer flex flex-col items-center p-4 border rounded-lg shadow-lg bg-white transform transition-transform hover:scale-105 hover:shadow-xl hover:bg-gray-100 ease-in-out duration-300"
               onClick={() => handleCategorySelect('')}
             >
-              <i className="fas fa-apple-alt text-3xl mb-2"></i>
+              <i className="fas fa-apple-alt text-3xl mb-2 text-green-500"></i> {/* Green icon */}
               <span className="text-lg font-medium">All Categories</span>
             </div>
             {categories.map((category, index) => (
@@ -93,7 +90,7 @@ const HomeScreen = () => {
                 className="category-item cursor-pointer flex flex-col items-center p-4 border rounded-lg shadow-lg bg-white transform transition-transform hover:scale-105 hover:shadow-xl hover:bg-gray-100 ease-in-out duration-300"
                 onClick={() => handleCategorySelect(category)}
               >
-                <i className={`icon-${category.toLowerCase()} text-3xl mb-2`}></i>
+                <i className={`icon-${category.toLowerCase()} text-3xl mb-2 text-green-500`}></i> {/* Green icon */}
                 <span className="text-lg font-medium">{category}</span>
               </div>
             ))}
@@ -110,14 +107,14 @@ const HomeScreen = () => {
               {error?.data?.message || error.error}
             </Message>
           ) : (
-            <div className="carousel-wrapper flex items-center">
+            <div className="carousel-wrapper flex items-center relative">
               <button
-                className="carousel-control left bg-gray-800 text-white p-2 rounded-full shadow hover:bg-gray-700 transition duration-300"
-                onClick={() => scrollLeft(carouselRef)}
+                className="carousel-control left absolute left-0 bg-green-600 text-white p-2 rounded-full shadow-lg hover:bg-green-500 transition duration-300"
+                onClick={() => scroll('left')}
               >
-                &lt;
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
               </button>
-              <div className="carousel-container overflow-x-auto whitespace-nowrap px-2" ref={carouselRef}>
+              <div className="carousel-container overflow-x-auto whitespace-nowrap px-2">
                 <div className="carousel-track flex">
                   {highRatedProducts.length ? (
                     highRatedProducts.map((product) => (
@@ -131,10 +128,10 @@ const HomeScreen = () => {
                 </div>
               </div>
               <button
-                className="carousel-control right bg-gray-800 text-white p-2 rounded-full shadow hover:bg-gray-700 transition duration-300"
-                onClick={() => scrollRight(carouselRef)}
+                className="carousel-control right absolute right-0 bg-green-600 text-white p-2 rounded-full shadow-lg hover:bg-green-500 transition duration-300"
+                onClick={() => scroll('right')}
               >
-                &gt;
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
               </button>
             </div>
           )}
@@ -151,14 +148,14 @@ const HomeScreen = () => {
                 {error?.data?.message || error.error}
               </Message>
             ) : (
-              <div className="carousel-wrapper flex items-center">
+              <div className="carousel-wrapper flex items-center relative">
                 <button
-                  className="carousel-control left bg-gray-800 text-white p-2 rounded-full shadow hover:bg-gray-700 transition duration-300"
-                  onClick={() => scrollLeft(carouselRef)}
+                  className="carousel-control left absolute left-0 bg-green-600 text-white p-2 rounded-full shadow-lg hover:bg-green-500 transition duration-300"
+                  onClick={() => scroll('left')}
                 >
-                  &lt;
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7"></path></svg>
                 </button>
-                <div className="carousel-container overflow-x-auto whitespace-nowrap px-2" ref={carouselRef}>
+                <div className="carousel-container overflow-x-auto whitespace-nowrap px-2">
                   <div className="carousel-track flex">
                     {data.products.filter((product) => product.category === category).map((product) => (
                       <div key={product._id} className="carousel-card mx-2 bg-white border rounded shadow-md hover:shadow-lg transition duration-300">
@@ -168,10 +165,10 @@ const HomeScreen = () => {
                   </div>
                 </div>
                 <button
-                  className="carousel-control right bg-gray-800 text-white p-2 rounded-full shadow hover:bg-gray-700 transition duration-300"
-                  onClick={() => scrollRight(carouselRef)}
+                  className="carousel-control right absolute right-0 bg-green-600 text-white p-2 rounded-full shadow-lg hover:bg-green-500 transition duration-300"
+                  onClick={() => scroll('right')}
                 >
-                  &gt;
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 5l7 7-7 7"></path></svg>
                 </button>
               </div>
             )}

@@ -1,8 +1,9 @@
 import { apiSlice } from './apiSlice';
-import { ORDERS_URL, PAYPAL_URL } from '../constants';
+import { ORDERS_URL } from '../constants';
 
 export const orderApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    // Create a new order in the system
     createOrder: builder.mutation({
       query: (order) => ({
         url: ORDERS_URL,
@@ -10,12 +11,32 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: order,
       }),
     }),
+    
+    // Create Razorpay order (initiates payment process)
+    createRazorpayOrder: builder.mutation({
+      query: (orderData) => ({
+        url: `${ORDERS_URL}/razorpay`,
+        method: 'POST',
+        body: orderData, // This should include amount and other necessary details
+      }),
+    }),
+
+    // Verify payment after Razorpay process is completed
+    verifyPayment: builder.mutation({
+      query: (paymentData) => ({
+        url: `${ORDERS_URL}/verifypayments`,
+        method: 'POST',
+        body: paymentData, // This should include razorpay_order_id, razorpay_payment_id, and razorpay_signature
+      }),
+    }),
+
     getOrderDetails: builder.query({
       query: (id) => ({
         url: `${ORDERS_URL}/${id}`,
       }),
       keepUnusedDataFor: 5,
     }),
+    
     payOrder: builder.mutation({
       query: ({ orderId, details }) => ({
         url: `${ORDERS_URL}/${orderId}/pay`,
@@ -23,30 +44,28 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: details,
       }),
     }),
-    getPaypalClientId: builder.query({
-      query: () => ({
-        url: PAYPAL_URL,
-      }),
-      keepUnusedDataFor: 5,
-    }),
+
     getMyOrders: builder.query({
       query: () => ({
         url: `${ORDERS_URL}/mine`,
       }),
       keepUnusedDataFor: 5,
     }),
+
     getOrders: builder.query({
       query: () => ({
         url: ORDERS_URL,
       }),
       keepUnusedDataFor: 5,
     }),
+
     deliverOrder: builder.mutation({
       query: (orderId) => ({
         url: `${ORDERS_URL}/${orderId}/deliver`,
         method: 'PUT',
       }),
     }),
+
     addDeliveryStep: builder.mutation({
       query: ({ id, location }) => ({
         url: `${ORDERS_URL}/${id}/addStep`,
@@ -54,12 +73,14 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: { location },
       }),
     }),
+
     getDeliverySteps: builder.query({
       query: (id) => ({
         url: `${ORDERS_URL}/${id}/steps`,
       }),
       keepUnusedDataFor: 5,
     }),
+
     updateOrderPayment: builder.mutation({
       query: ({ id, isPaid }) => ({
         url: `${ORDERS_URL}/${id}/updatePayment`,
@@ -67,6 +88,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: { isPaid },
       }),
     }),
+
     updateOrderDelivery: builder.mutation({
       query: ({ id, isDelivered }) => ({
         url: `${ORDERS_URL}/${id}/updateDelivery`,
@@ -74,6 +96,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: { isDelivered },
       }),
     }),
+
     updateOrderLocation: builder.mutation({
       query: ({ id, deliveryLocation }) => ({
         url: `${ORDERS_URL}/${id}/updateLocation`,
@@ -81,6 +104,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: { deliveryLocation },
       }),
     }),
+
     updateOrderStatus: builder.mutation({
       query: ({ id, status, date }) => ({
         url: `${ORDERS_URL}/${id}/status`,
@@ -88,6 +112,7 @@ export const orderApiSlice = apiSlice.injectEndpoints({
         body: { status, date },
       }),
     }),
+
     cancelOrder: builder.mutation({
       query: (id) => ({
         url: `/orders/${id}/cancel`,
@@ -99,9 +124,10 @@ export const orderApiSlice = apiSlice.injectEndpoints({
 
 export const {
   useCreateOrderMutation,
+  useCreateRazorpayOrderMutation,  // Razorpay order mutation hook
+  useVerifyPaymentMutation,        // Razorpay payment verification hook
   useGetOrderDetailsQuery,
   usePayOrderMutation,
-  useGetPaypalClientIdQuery,
   useGetMyOrdersQuery,
   useGetOrdersQuery,
   useDeliverOrderMutation,
@@ -111,5 +137,5 @@ export const {
   useUpdateOrderDeliveryMutation,
   useUpdateOrderLocationMutation,
   useUpdateOrderStatusMutation,
-  useCancelOrderMutation
+  useCancelOrderMutation,
 } = orderApiSlice;

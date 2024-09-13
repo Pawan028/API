@@ -35,8 +35,15 @@ const orderSchema = mongoose.Schema(
     paymentResult: {
       id: { type: String },
       status: { type: String },
-      update_time: { type: String },
+      update_time: { type: Date }, // Change this from String to Date
       email_address: { type: String },
+    },
+    // Razorpay specific fields
+    razorpay: {
+      orderId: { type: String },        // Razorpay Order ID
+      paymentId: { type: String },      // Razorpay Payment ID
+      signature: { type: String },      // Razorpay Signature for Verification
+      verified: { type: Boolean, default: false },  // Whether the payment was verified successfully
     },
     itemsPrice: {
       type: Number,
@@ -74,12 +81,6 @@ const orderSchema = mongoose.Schema(
     deliveredAt: {
       type: Date,
     },
-    deliverySteps: [
-      {
-        location: { type: String },
-        date: { type: Date, default: Date.now },
-      },
-    ],
     status: {
       confirmed: { type: Boolean, default: false },
       placed: { type: Boolean, default: false },

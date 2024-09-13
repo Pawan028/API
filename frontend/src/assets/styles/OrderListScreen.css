@@ -15,6 +15,28 @@
     color: #333;
     margin-bottom: 20px;
   }
+  .order-container {
+    padding: 20px;
+  }
+  
+  .order-title {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+  
+  .table-sm td, .table-sm th {
+    padding: 0.75rem;
+    vertical-align: middle;
+  }
+  
+  @media (max-width: 768px) {
+    .order-summary h2, .order-summary h3 {
+      font-size: 1.2rem;
+    }
+    .table-sm td {
+      font-size: 0.8rem;
+    }
+  }
   
   /* Table Styling */
   .table-sm {

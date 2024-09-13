@@ -1,19 +1,20 @@
 import { useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { useGetOrderDetailsQuery, useUpdateOrderStatusMutation } from '../../slices/ordersApiSlice';
-import { Form, Button, Card, Row, Col, Toast } from 'react-bootstrap';
+import { useGetOrderDetailsQuery, useUpdateOrderStatusMutation, useUpdateOrderPaymentMutation } from '../../slices/ordersApiSlice';
+import { Form, Button, Card, Row, Col } from 'react-bootstrap';
 import Loader from '../../components/Loader';
 import Message from '../../components/Message';
+import { toast, ToastContainer } from 'react-toastify'; // Import react-toastify
+import 'react-toastify/dist/ReactToastify.css'; // Import CSS for toast
 import '../../assets/styles/UpdateOrderStepsScreen.css';
 
 const AdminUpdateOrderStepsScreen = () => {
   const { id } = useParams();
   const { data: order, isLoading, error, refetch } = useGetOrderDetailsQuery(id);
   const [updateOrderStatus, { isLoading: isLoadingUpdate }] = useUpdateOrderStatusMutation();
-
+  const [updateOrderPayment] = useUpdateOrderPaymentMutation(); // Import the new mutation
   const [status, setStatus] = useState('');
   const [date, setDate] = useState('');
-  const [showToast, setShowToast] = useState(false);
 
   const submitHandler = async (e) => {
     e.preventDefault();
@@ -22,10 +23,20 @@ const AdminUpdateOrderStepsScreen = () => {
       await updateOrderStatus({ id, status: updatedStatus, date });
       setStatus('');
       setDate('');
-      setShowToast(true); // Show toast on successful update
+      toast.success('Order status updated successfully!'); // Show toast on successful update
 
       // Refresh the order details after the status update
       refetch();
+    }
+  };
+
+  const handleMarkAsPaid = async () => {
+    try {
+      await updateOrderPayment({ id, isPaid: true }).unwrap();
+      refetch(); // Refresh the order details to update payment status
+      toast.success('Order marked as paid.'); // Use toast for notifications
+    } catch (error) {
+      toast.error('Failed to mark order as paid.'); // Use toast for notifications
     }
   };
 
@@ -65,10 +76,25 @@ const AdminUpdateOrderStepsScreen = () => {
             onChange={(e) => setDate(e.target.value)}
           ></Form.Control>
         </Form.Group>
-        <Button type='submit' variant='primary' className='mt-3' disabled={isLoadingUpdate}>
-          Update Status
-        </Button>
+        <Button 
+        type='submit' 
+        variant='primary' 
+        className='mt-3 w-40' // Tailwind class for fixed width
+        disabled={isLoadingUpdate}
+      >
+        Update Status
+      </Button>
+      <Button 
+        variant='success' 
+        className='mt-3 ml-2 w-40' // Tailwind class for fixed width
+        onClick={handleMarkAsPaid}
+        disabled={order.isPaid} // Disable button if already paid
+      >
+        Mark as Paid
+      </Button>
       </Form>
+
+      
 
       <h2 className='mt-5'>Delivery Progress</h2>
       <Row>
@@ -113,15 +139,7 @@ const AdminUpdateOrderStepsScreen = () => {
         </Col>
       </Row>
 
-      <Toast
-        show={showToast}
-        onClose={() => setShowToast(false)}
-        delay={3000}
-        autohide
-        className='update-toast'
-      >
-        <Toast.Body>Order status updated successfully!</Toast.Body>
-      </Toast>
+      <ToastContainer /> {/* Add ToastContainer for toast notifications */}
     </>
   );
 };

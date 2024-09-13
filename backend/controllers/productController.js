@@ -1,24 +1,5 @@
 const asyncHandler = require('../middleware/asyncHandler'); // Adjust path as necessary
 const Product = require('../models/productModel');
-const path = require('path');
-const multer = require('multer'); 
-
-// Configure multer for file storage
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'uploads/') // Directory where files will be saved
-  },
-  filename: (req, file, cb) => {
-    cb(null, `${Date.now()}_${file.originalname}`) // Unique filename
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 10 * 1024 * 1024 // Limit file size to 10 MB
-  }
-});
 
 // @desc    Fetch all products
 // @route   GET /api/products
@@ -167,34 +148,6 @@ const createProductReview = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Upload product image
-// @route   POST /api/products/:id/upload
-// @access  Private/Admin
-const uploadProductImage = asyncHandler(async (req, res) => {
-  upload.single('image')(req, res, async (err) => {
-    if (err) {
-      res.status(400);
-      throw new Error('Image upload failed');
-    }
-    
-    // Get the image path
-    const imagePath = path.join('/uploads', req.file.filename);
-
-    // Find the product and update the image URL
-    const product = await Product.findById(req.params.id);
-
-    if (product) {
-      product.image = imagePath;
-      await product.save();
-      res.json({ message: 'Image uploaded successfully', image: imagePath });
-    } else {
-      res.status(404);
-      throw new Error('Product not found');
-    }
-  });
-});
-
-
 // @desc    Get top rated products
 // @route   GET /api/products/top
 // @access  Public
@@ -212,5 +165,4 @@ module.exports = {
   deleteProduct,
   createProductReview,
   getTopProducts,
-  uploadProductImage, 
 };

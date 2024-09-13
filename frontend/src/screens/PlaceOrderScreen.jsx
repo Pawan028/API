@@ -1,211 +1,217 @@
-import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { toast, ToastContainer } from 'react-toastify';
+import React, { useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import Message from '../components/Message';
+import { useNavigate } from 'react-router-dom';
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import CheckoutSteps from '../components/CheckoutSteps';
 import Loader from '../components/Loader';
 import { clearCartItems } from '../slices/cartSlice';
-import {
-  PAYMENT_METHOD_RAZORPAY_CARD,
-  PAYMENT_METHOD_RAZORPAY_UPI,
-  PAYMENT_METHOD_COD,
-} from '../constants';
-import axios from 'axios';
+import { useCreateOrderMutation, useCreateRazorpayOrderMutation, useVerifyPaymentMutation } from '../slices/ordersApiSlice'; 
+import { PAYMENT_METHOD_COD, PAYMENT_METHOD_RAZORPAY } from '../constants';
 
 const PlaceOrderScreen = () => {
-  const [isLoading, setIsLoading] = useState(false);
-  const navigate = useNavigate();
   const dispatch = useDispatch();
+  const navigate = useNavigate();
+  
   const cart = useSelector((state) => state.cart);
+  const { shippingAddress, paymentMethod, cartItems } = cart;
 
-  useEffect(() => {
-    if (!cart.shippingAddress.address) {
-      navigate('/shipping');
-    } else if (!cart.paymentMethod) {
-      navigate('/payment');
-    }
-  }, [cart.paymentMethod, cart.shippingAddress.address, navigate]);
+  const [createOrder, { isLoading: isCreatingOrder }] = useCreateOrderMutation();
+  const [createRazorpayOrder] = useCreateRazorpayOrderMutation();
+  const [verifyPayment] = useVerifyPaymentMutation();
+  
+  const [loading, setLoading] = useState(false);
 
-  const placeOrderHandler = async () => {
-    setIsLoading(true);
-    if (cart.paymentMethod === PAYMENT_METHOD_COD) {
-      await handleCODPayment();
-    } else if (
-      cart.paymentMethod === PAYMENT_METHOD_RAZORPAY_CARD ||
-      cart.paymentMethod === PAYMENT_METHOD_RAZORPAY_UPI
-    ) {
-      await handleOnlinePayment();
-    } else {
-      toast.error('Invalid payment method');
-    }
-    setIsLoading(false);
+  const loadRazorpayScript = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement('script');
+      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.onload = () => resolve(true);
+      script.onerror = () => resolve(false);
+      document.body.appendChild(script);
+    });
   };
 
-  const handleCODPayment = async () => {
+  const handlePaymentSuccess = async (response, razorpayOrderId, orderId) => {
     try {
-      const res = await axios.post('/api/orders', {
-        orderItems: cart.cartItems,
-        shippingAddress: cart.shippingAddress,
-        paymentMethod: cart.paymentMethod,
+      const verifyResponse = await verifyPayment({
+        razorpay_order_id: razorpayOrderId,
+        razorpay_payment_id: response.razorpay_payment_id,
+        razorpay_signature: response.razorpay_signature,
+        orderId: orderId,
+      }).unwrap();
+  
+      if (verifyResponse.success) {
+        dispatch(clearCartItems());
+        navigate(`/order/${verifyResponse.order._id}`);
+        toast.success('Order placed successfully!');
+      } else {
+        toast.error('Payment verification failed. Please try again.');
+      }
+    } catch (error) {
+      toast.error('Payment verification failed');
+      console.error('Payment verification error:', error);
+    }
+  };
+
+  const handleRazorpayPayment = async () => {
+    setLoading(true);
+
+    const loaded = await loadRazorpayScript();
+    if (!loaded) {
+      toast.error('Failed to load Razorpay SDK. Please try again later.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const order = await createOrder({
+        orderItems: cartItems,
+        shippingAddress: shippingAddress,
+        paymentMethod: PAYMENT_METHOD_RAZORPAY,
         itemsPrice: cart.itemsPrice,
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
-      });
-      dispatch(clearCartItems());
-      navigate(`/order/${res.data._id}`);
-    } catch (err) {
-      toast.error(err.message || 'An error occurred');
-    }
-  };
+        isPaid: false,
+      }).unwrap();
 
-  const handleOnlinePayment = async () => {
-    try {
-      const { data: order } = await axios.post('/api/payments/initiate', {
-        amount: cart.totalPrice,
-      });
+      const razorpayOrder = await createRazorpayOrder({
+        amount: cart.totalPrice * 100,
+      }).unwrap();
+
       const options = {
-        key: 'YOUR_RAZORPAY_KEY_ID',
-        amount: order.amount,
+        key: process.env.REACT_APP_RAZORPAY_KEY_ID,
+        amount: razorpayOrder.amount,
         currency: 'INR',
-        name: 'Your Store',
-        description: 'Test Transaction',
-        image: '/logo.png',
-        order_id: order.orderId,
+        name: 'EcoMart',
+        description: 'Thank you for your order!',
+        order_id: razorpayOrder.id,
         handler: async (response) => {
-          await verifyPaymentAndPlaceOrder(response);
+          await handlePaymentSuccess(response, razorpayOrder.id, order._id);
+          setLoading(false);
         },
         prefill: {
-          name: cart.shippingAddress.name,
-          email: cart.shippingAddress.email,
-          contact: cart.shippingAddress.contactNumber,
-        },
-        notes: {
-          address: cart.shippingAddress.address,
+          name: shippingAddress.name,
+          email: shippingAddress.email,
         },
         theme: {
           color: '#3399cc',
         },
       };
+
       const razorpay = new window.Razorpay(options);
       razorpay.open();
-    } catch (err) {
-      toast.error(err.message || 'An error occurred during payment initiation');
+    } catch (error) {
+      toast.error('An error occurred while processing your payment');
+      console.error('Razorpay payment error:', error);
+      setLoading(false);
     }
   };
 
-  const verifyPaymentAndPlaceOrder = async (paymentResult) => {
+  const handleCODPayment = async () => {
+    setLoading(true);
     try {
-      const res = await axios.post('/api/payments/verify', {
-        razorpayOrderId: paymentResult.razorpay_order_id,
-        razorpayPaymentId: paymentResult.razorpay_payment_id,
-        razorpaySignature: paymentResult.razorpay_signature,
-        orderId: cart.orderId,
-      });
-      const order = await axios.post('/api/orders', {
-        orderItems: cart.cartItems,
-        shippingAddress: cart.shippingAddress,
-        paymentMethod: cart.paymentMethod,
+      const order = await createOrder({
+        orderItems: cartItems,
+        shippingAddress: shippingAddress,
+        paymentMethod: PAYMENT_METHOD_COD,
         itemsPrice: cart.itemsPrice,
         shippingPrice: cart.shippingPrice,
         taxPrice: cart.taxPrice,
         totalPrice: cart.totalPrice,
-        paymentResult: res.data.paymentResult,
-      });
+        isPaid: false,
+      }).unwrap();
+
       dispatch(clearCartItems());
-      navigate(`/order/${order.data._id}`);
+      navigate(`/order/${order._id}`);
+      toast.success('Order placed successfully!');
+      setLoading(false);
     } catch (err) {
-      toast.error(err.message || 'An error occurred during payment verification');
+      toast.error('Error placing COD order');
+      console.error('COD order error:', err);
+      setLoading(false);
+    }
+  };
+
+  const placeOrderHandler = async () => {
+    if (paymentMethod === PAYMENT_METHOD_RAZORPAY) {
+      await handleRazorpayPayment();
+    } else if (paymentMethod === PAYMENT_METHOD_COD) {
+      await handleCODPayment();
+    } else {
+      toast.error('Invalid payment method');
     }
   };
 
   return (
-    <div className="animate-fadeIn p-4">
-      <ToastContainer />
-      <CheckoutSteps step1 step2 step3 step4 />
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="md:col-span-2 space-y-4">
-          <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
-            <h2 className="text-2xl font-bold">Shipping</h2>
-            <p>
-              <strong>Address:</strong> {cart.shippingAddress.address},{' '}
-              {cart.shippingAddress.city} {cart.shippingAddress.pincode},{' '}
-              {cart.shippingAddress.country}
-            </p>
-          </div>
-
-          <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
-            <h2 className="text-2xl font-bold">Payment Method</h2>
-            <p>
-              <strong>Method:</strong> {cart.paymentMethod}
-            </p>
-          </div>
-
-          <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
-            <h2 className="text-2xl font-bold">Order Items</h2>
-            {cart.cartItems.length === 0 ? (
-              <Message>Your cart is empty</Message>
-            ) : (
-              <ul>
-                {cart.cartItems.map((item, index) => (
-                  <li key={index} className="flex items-center py-2">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 rounded-lg transform hover:scale-110 transition-transform duration-200"
-                    />
-                    <div className="flex-1 px-4">
-                      <Link
-                        to={`/product/${item.product}`}
-                        className="text-blue-600 hover:underline"
-                      >
-                        {item.name}
-                      </Link>
+    <div className="min-h-screen  flex flex-col p-6 md:p-12">
+      {loading || isCreatingOrder ? <Loader /> : null}
+      <div className="container mx-auto max-w-4xl bg-white rounded-lg shadow-md p-6 space-y-6">
+        <CheckoutSteps step1 step2 step3 step4 />
+        <h1 className="text-2xl font-bold text-gray-900 mb-4">Place Your Order</h1>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-4">
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800">Shipping Address</h2>
+              <p className="text-gray-600">
+                <strong>Address:</strong> {shippingAddress.address}, {shippingAddress.city}, {shippingAddress.postalCode}, {shippingAddress.country}
+              </p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800">Payment Method</h2>
+              <p className="text-gray-600">
+                <strong>Method:</strong> {paymentMethod}
+              </p>
+            </div>
+            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+              <h2 className="text-lg font-semibold text-gray-800">Order Items</h2>
+              {cartItems.length === 0 ? (
+                <p className="text-gray-600">Your cart is empty</p>
+              ) : (
+                <div className="space-y-4">
+                  {cartItems.map((item, index) => (
+                    <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                      <img src={item.image} alt={item.name} className="w-20 h-20 object-cover rounded-md" />
+                      <div className="ml-4 flex-1">
+                        <p className="text-gray-800 font-medium">{item.name}</p>
+                        <p className="text-gray-600">{item.qty} x ₹{item.price} = ₹{item.qty * item.price}</p>
+                      </div>
                     </div>
-                    <div className="text-right">
-                      {item.qty} x ₹{item.price} = ₹
-                      {(item.qty * item.price).toFixed(2)}
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white p-6 shadow-lg rounded-lg hover:shadow-2xl transition-shadow duration-300">
-          <h2 className="text-2xl font-bold">Order Summary</h2>
-          <div className="my-4">
-            <div className="flex justify-between py-2">
-              <span>Items</span>
-              <span>₹{cart.itemsPrice}</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span>Shipping</span>
-              <span>₹{cart.shippingPrice}</span>
-            </div>
-            <div className="flex justify-between py-2">
-              <span>Tax</span>
-              <span>₹{cart.taxPrice}</span>
-            </div>
-            <div className="flex justify-between py-2 font-bold">
-              <span>Total</span>
-              <span>₹{cart.totalPrice}</span>
+                  ))}
+                </div>
+              )}
             </div>
           </div>
-          <button
-            className={`w-full py-3 mt-4 bg-blue-600 text-white rounded-lg transform hover:scale-105 transition-transform duration-200 ${
-              cart.cartItems.length === 0 || isLoading
-                ? 'opacity-50 cursor-not-allowed'
-                : ''
-            }`}
-            disabled={cart.cartItems.length === 0 || isLoading}
-            onClick={placeOrderHandler}
-          >
-            Place Order
-          </button>
-          {isLoading && <Loader />}
+          <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+            <h2 className="text-lg font-semibold text-gray-800">Order Summary</h2>
+            <div className="space-y-2">
+              <div className="flex justify-between text-gray-700">
+                <span>Items</span>
+                <span>₹{cart.itemsPrice}</span>
+              </div>
+              <div className="flex justify-between text-gray-700">
+                <span>Shipping</span>
+                <span>₹{cart.shippingPrice}</span>
+              </div>
+              <div className="flex justify-between text-gray-700">
+                <span>Tax</span>
+                <span>₹{cart.taxPrice}</span>
+              </div>
+              <div className="flex justify-between font-bold text-gray-900">
+                <span>Total</span>
+                <span>₹{cart.totalPrice}</span>
+              </div>
+              <button
+                type="button"
+                onClick={placeOrderHandler}
+                className="w-full mt-4 bg-gradient-to-r from-green-500 to-green-700 text-white py-2 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+                disabled={cartItems.length === 0 || loading || isCreatingOrder}
+              >
+                Place Order
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>

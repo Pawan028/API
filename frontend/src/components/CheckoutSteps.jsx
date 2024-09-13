@@ -33,7 +33,7 @@ const CheckoutSteps = ({ step1, step2, step3, step4 }) => {
         <span className="mt-2 font-semibold">Shipping</span>
       </div>
 
-      {/** Step 3 **/}
+       {/** Step 3 **/}
       <div className={`relative flex flex-col items-center transition-transform duration-300 ${step3 ? 'text-blue-600' : 'text-gray-400'}`}>
         <div className={`w-12 h-12 rounded-full flex items-center justify-center border-2 ${step3 ? 'border-blue-600' : 'border-gray-400'} transition-colors duration-300`}>
           {step3 ? (

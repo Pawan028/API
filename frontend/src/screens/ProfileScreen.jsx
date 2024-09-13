@@ -114,25 +114,26 @@ const ProfileScreen = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {orders.map((order) => (
-                    <tr key={order._id} className="hover:bg-gray-200 transform transition-transform hover:scale-105">
-                      <td className="border px-4 py-2">{order._id}</td>
-                      <td className="border px-4 py-2">{order.createdAt.substring(0, 10)}</td>
-                      <td className="border px-4 py-2">₹{order.totalPrice}</td>
-                      <td className="border px-4 py-2">
-                        {order.isPaid ? order.paidAt.substring(0, 10) : <FaTimes className="text-red-500" />}
-                      </td>
-                      <td className="border px-4 py-2">
-                        {order.isDelivered ? order.deliveredAt.substring(0, 10) : <FaTimes className="text-red-500" />}
-                      </td>
-                      <td className="border px-4 py-2">
-                        <Link to={`/order/${order._id}`} className="text-blue-500 hover:underline">
-                          Details
-                        </Link>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
+  {orders.map((order) => (
+    <tr key={order._id} className="hover:bg-gray-200 transform transition-transform hover:scale-105">
+      <td className="border px-4 py-2">{order._id}</td>
+      <td className="border px-4 py-2">{order.createdAt?.substring(0, 10)}</td>
+      <td className="border px-4 py-2">₹{order.totalPrice}</td>
+      <td className="border px-4 py-2">
+        {order.isPaid ? order.paidAt?.substring(0, 10) : <FaTimes className="text-red-500" />}
+      </td>
+      <td className="border px-4 py-2">
+        {order.isDelivered ? order.deliveredAt?.substring(0, 10) : <FaTimes className="text-red-500" />}
+      </td>
+      <td className="border px-4 py-2">
+        <Link to={`/order/${order._id}`} className="text-blue-500 hover:underline">
+          Details
+        </Link>
+      </td>
+    </tr>
+  ))}
+</tbody>
+
               </table>
             </div>
           )}

@@ -42,8 +42,8 @@ const LoginScreen = () => {
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-moving-pattern bg-cover bg-center">
-      <div className="absolute inset-0 bg-black opacity-40"></div>
+    <div className="relative min-h-screen flex items-center justify-center   bg-cover bg-center">
+      <div className="absolute inset-0  opacity-40"></div>
       <div className="relative z-10 bg-white p-8 rounded-xl shadow-xl transform transition-transform hover:scale-105 hover:shadow-2xl max-w-sm mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Sign In</h1>
 

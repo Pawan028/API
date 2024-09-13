@@ -11,127 +11,191 @@ const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+
 // @desc    Create new order
 // @route   POST /api/orders
 // @access  Private
 const addOrderItems = asyncHandler(async (req, res) => {
   const { orderItems, shippingAddress, paymentMethod } = req.body;
 
-  if (orderItems && orderItems.length === 0) {
+  if (!orderItems || orderItems.length === 0) {
     res.status(400);
     throw new Error('No order items');
-  } else {
-    const itemsFromDB = await Product.find({
-      _id: { $in: orderItems.map((x) => x._id) },
-    });
-
-    const dbOrderItems = orderItems.map((itemFromClient) => {
-      const matchingItemFromDB = itemsFromDB.find(
-        (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
-      );
-      return {
-        ...itemFromClient,
-        product: itemFromClient._id,
-        price: matchingItemFromDB.price,
-        _id: undefined,
-      };
-    });
-
-    const { itemsPrice, taxPrice, shippingPrice, totalPrice } = calcPrices(dbOrderItems);
-
-    const order = new Order({
-      orderItems: dbOrderItems,
-      user: req.user._id,
-      shippingAddress,
-      paymentMethod,
-      itemsPrice,
-      taxPrice,
-      shippingPrice,
-      totalPrice,
-      status: {
-        placed: true,
-        confirmed: true,
-      },
-      timestamps: {
-        placed: Date.now(),
-        confirmed: Date.now(),
-      },
-    });
-
-    const createdOrder = await order.save();
-
-    res.status(201).json(createdOrder);
   }
-    // Create a Razorpay order
-    const razorpayOrder = await razorpay.orders.create({
+
+  const itemsFromDB = await Product.find({
+    _id: { $in: orderItems.map((x) => x._id) },
+  });
+
+  const dbOrderItems = orderItems.map((itemFromClient) => {
+    const matchingItemFromDB = itemsFromDB.find(
+      (itemFromDB) => itemFromDB._id.toString() === itemFromClient._id
+    );
+
+    if (!matchingItemFromDB) {
+      throw new Error(`Product not found for item: ${itemFromClient.name}`);
+    }
+
+    return {
+      ...itemFromClient,
+      product: itemFromClient._id,
+      price: matchingItemFromDB.price,
+      _id: undefined,
+    };
+  });
+
+  const { itemsPrice, taxPrice, shippingPrice, totalPrice } = calcPrices(dbOrderItems);
+
+  let razorpayOrder = null;
+  if (paymentMethod === 'Online') {
+    // Create Razorpay order for online payments
+    const options = {
       amount: totalPrice * 100, // Amount in paise
       currency: 'INR',
-      receipt: createdOrder._id.toString(),
-    });
-
-    // Save Razorpay order ID to the order
-    createdOrder.paymentDetails = {
-      razorpayOrderId: razorpayOrder.id,
+      receipt: `order_rcptid_${Date.now()}`,
     };
 
-    await createdOrder.save();
+    razorpayOrder = await razorpay.orders.create(options);
 
-    res.status(201).json({ order: createdOrder, razorpayOrder });
+    if (!razorpayOrder || !razorpayOrder.id) {
+      throw new Error('Failed to create Razorpay order');
+    }
+  }
 
+  const newOrder = new Order({
+    orderItems: dbOrderItems,
+    user: req.user._id,
+    shippingAddress,
+    paymentMethod,
+    itemsPrice,
+    taxPrice,
+    shippingPrice,
+    totalPrice,
+    razorpayOrderId: razorpayOrder ? razorpayOrder.id : null, // Set only for online payments
+    status: {
+      placed: true,
+      confirmed: true,
+      paid: paymentMethod === 'Online',
+    },
+    timestamps: {
+      placed: Date.now(),
+      confirmed: Date.now(),
+      paid: paymentMethod === 'Online' ? Date.now() : undefined,
+    },
+  });
+
+  const createdOrder = await newOrder.save();
+
+  res.status(201).json({
+    ...createdOrder._doc,
+    razorpayOrderId: razorpayOrder ? razorpayOrder.id : null,
+    amount: razorpayOrder ? razorpayOrder.amount / 100 : totalPrice,
+  });
 });
 
-
 // @desc    Verify Razorpay payment
-// @route   POST /api/orders/:id/verify-payment
+// @route   POST /api/orders/verify-payment
 // @access  Private
 const verifyPayment = asyncHandler(async (req, res) => {
-  const { paymentId, orderId, signature } = req.body;
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId } = req.body;
 
-  try {
-    const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET)
-      .update(`${orderId}|${paymentId}`)
-      .digest('hex');
+  // Fetch order
+  const order = await Order.findById(orderId).populate('user');
+  if (!order) {
+    return res.status(404).json({ success: false, message: 'Order not found' });
+  }
 
-    if (generatedSignature === signature) {
-      // Payment is verified
-      const order = await Order.findById(orderId);
+  // HMAC verification
+  const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+  hmac.update(razorpay_order_id + '|' + razorpay_payment_id);
+  const generatedSignature = hmac.digest('hex');
 
-      if (order) {
-        order.isPaid = true;
-        order.paidAt = Date.now();
-        order.paymentResult = {
-          id: paymentId,
-          status: 'Paid',
-        };
+  if (generatedSignature === razorpay_signature) {
+    // Payment verified
+    order.isPaid = true;
+    order.paidAt = Date.now();
+    order.paymentMethod = 'Online';
+    order.paymentResult = {
+      id: razorpay_payment_id,
+      status: 'Paid',
+      update_time: Date.now(),
+      email_address: order.user.email,
+    };
+    order.razorpay = {
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+      signature: razorpay_signature,
+      verified: true,
+    };
 
-        const updatedOrder = await order.save();
-
-        // Save payment details
-        const payment = new Payment({
-          order: orderId,
-          paymentMethod: 'Razorpay',
-          amountPaid: order.totalPrice,
-          paymentStatus: 'Completed',
-          transactionId: paymentId,
-        });
-
-        await payment.save();
-
-        res.json(updatedOrder);
-      } else {
-        res.status(404);
-        throw new Error('Order not found');
-      }
-    } else {
-      res.status(400);
-      throw new Error('Invalid signature');
-    }
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    const updatedOrder = await order.save();
+    res.status(200).json({
+      success: true,
+      message: 'Payment verified and order updated',
+      order: updatedOrder,
+    });
+  } else {
+    res.status(400).json({ success: false, message: 'Invalid payment signature' });
   }
 });
 
+// @desc    Automatically verify Razorpay payment and update order
+// @route   PUT /api/orders/:id/pay
+// @access  Private
+const updateOrderToPaid = asyncHandler(async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = req.body;
+
+  // Find the order by ID
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    return res.status(404).json({ message: 'Order not found' });
+  }
+
+  if (order.isPaid) {
+    return res.status(400).json({ message: 'Order is already paid' });
+  }
+
+  // Step 1: Verify the payment signature
+  const hmac = crypto.createHmac('sha256', process.env.RAZORPAY_KEY_SECRET);
+  hmac.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+  const generatedSignature = hmac.digest('hex');
+
+  if (generatedSignature !== razorpay_signature) {
+    return res.status(400).json({ message: 'Invalid payment signature' });
+  }
+
+  // Step 2: If the signature is valid, mark the order as paid
+  order.isPaid = true;
+  order.paidAt = Date.now();
+  order.paymentMethod = 'Online';
+  order.paymentResult = {
+    id: razorpay_payment_id,
+    status: 'Paid',
+    update_time: Date.now(),
+    email_address: order.user.email,
+  };
+
+  // Save Razorpay details for future reference
+  order.razorpay = {
+    orderId: razorpay_order_id,
+    paymentId: razorpay_payment_id,
+    signature: razorpay_signature,
+    verified: true,
+  };
+
+  // Step 3: Save the updated order
+  const updatedOrder = await order.save();
+
+  res.status(200).json(updatedOrder);
+});
+
+module.exports = {
+  updateOrderToPaid,
+};
+
+ 
+  
 // @desc    Get logged in user orders
 // @route   GET /api/orders/myorders
 // @access  Private
@@ -154,39 +218,7 @@ const getOrderById = asyncHandler(async (req, res) => {
   }
 });
 
-// @desc    Update order to paid
-// @route   PUT /api/orders/:id/pay
-// @access  Private
-const updateOrderToPaid = asyncHandler(async (req, res) => {
-  const { verified, value } = await verifyPayPalPayment(req.body.id);
-  if (!verified) throw new Error('Payment not verified');
-
-  const isNewTransaction = await checkIfNewTransaction(Order, req.body.id);
-  if (!isNewTransaction) throw new Error('Transaction has been used before');
-
-  const order = await Order.findById(req.params.id);
-
-  if (order) {
-    const paidCorrectAmount = order.totalPrice.toString() === value;
-    if (!paidCorrectAmount) throw new Error('Incorrect amount paid');
-
-    order.isPaid = true;
-    order.paidAt = Date.now();
-    order.paymentResult = {
-      id: req.body.id,
-      status: req.body.status,
-      update_time: req.body.update_time,
-      email_address: req.body.payer.email_address,
-    };
-
-    const updatedOrder = await order.save();
-
-    res.json(updatedOrder);
-  } else {
-    res.status(404);
-    throw new Error('Order not found');
-  }
-});
+ 
 
 // @desc    Update order to delivered
 // @route   PUT /api/orders/:id/deliver
@@ -194,18 +226,48 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
 
-  if (order) {
-    order.isDelivered = true;
-    order.deliveredAt = Date.now();
-
-    const updatedOrder = await order.save();
-
-    res.json(updatedOrder);
-  } else {
+  if (!order) {
     res.status(404);
     throw new Error('Order not found');
   }
+
+  order.isDelivered = true;
+  order.deliveredAt = Date.now();
+
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
 });
+
+// @desc    Update order status
+// @route   PUT /api/orders/:id/updateStatus
+// @access  Private/Admin
+const updateOrderStatus = asyncHandler(async (req, res) => {
+  const { status, date } = req.body;
+  const order = await Order.findById(req.params.id);
+
+  if (!order) {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+
+  if (!order.status || typeof order.status !== 'object') {
+    res.status(400);
+    throw new Error('Order status field is not an object');
+  }
+
+  if (order.status[status] === undefined) {
+    res.status(400);
+    throw new Error('Invalid status');
+  }
+
+  // Update status and timestamp
+  order.status[status] = true;
+  order.timestamps[status] = date ? new Date(date) : Date.now();
+
+  const updatedOrder = await order.save();
+  res.json(updatedOrder);
+});
+
 
 // @desc    Get all orders
 // @route   GET /api/orders
@@ -305,41 +367,12 @@ const getDeliverySteps = asyncHandler(async (req, res) => {
   }
 });
 
-const updateOrderStatus = asyncHandler(async (req, res) => {
-  const { status, date } = req.body;
-  const order = await Order.findById(req.params.id);
-
-  if (order) {
-    // Ensure the status field is an object
-    if (order.status && typeof order.status === 'object') {
-      // Check if the provided status is a valid key in the order status object
-      if (order.status[status] !== undefined) {
-        // Update the status field
-        order.status[status] = true;
-        // Update the timestamp for the status if a date is provided
-        order.timestamps[status] = date ? new Date(date) : Date.now();
-
-        const updatedOrder = await order.save();
-        res.json(updatedOrder);
-      } else {
-        res.status(400);
-        throw new Error('Invalid status');
-      }
-    } else {
-      res.status(400);
-      throw new Error('Order status field is not an object');
-    }
-  } else {
-    res.status(404);
-    throw new Error('Order not found');
-  }
-});
 
 module.exports = {
   addOrderItems,
   getMyOrders,
   getOrderById,
-  verifyPayment, 
+  verifyPayment,
   updateOrderToPaid,
   updateOrderToDelivered,
   getOrders,

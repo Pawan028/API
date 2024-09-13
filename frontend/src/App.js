@@ -1,4 +1,4 @@
- import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { Container } from "react-bootstrap";
 import { Outlet } from "react-router-dom";
@@ -18,6 +18,9 @@ const App = () => {
   const [locationSet, setLocationSet] = useState(false); 
 
   useEffect(() => {
+    // Apply floating background to the body
+    document.body.classList.add('bg-moving-pattern');
+
     const expirationTime = localStorage.getItem('expirationTime');
     if (expirationTime) {
       const currentTime = new Date().getTime();
@@ -31,7 +34,11 @@ const App = () => {
       setLoading(false);
     }, 3000);
 
-    return () => clearTimeout(timer);
+    return () => {
+      clearTimeout(timer);
+      // Remove the background class when the component unmounts
+      document.body.classList.remove('bg-moving-pattern');
+    };
   }, [dispatch]);
 
   const handleLocationSet = () => {
@@ -47,7 +54,7 @@ const App = () => {
         <>
           <ToastContainer />
           <Header setShowCard={setShowCard} />
-          <main className='py-3'>
+          <main className='pt-32 lg:pt-40'>
             <Container>
               <Outlet />
             </Container>

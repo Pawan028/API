@@ -55,7 +55,7 @@ const ProductEditScreen = () => {
       }).unwrap();
       toast.success('Product updated');
       refetch();
-      navigate('/admin/productlist');
+      navigate('/admin/dashboard/productlist');
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -76,7 +76,7 @@ const ProductEditScreen = () => {
 
   return (
     <>
-      <Link to='/admin/productlist' className='btn btn-light my-3'>
+      <Link to='/admin/dashboard/productlist' className='btn btn-light my-3'>
         Go Back
       </Link>
       <FormContainer>

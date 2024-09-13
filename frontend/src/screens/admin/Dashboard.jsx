@@ -1,62 +1,56 @@
 import React from 'react';
-import { FaUsers, FaBoxOpen, FaClipboardList, FaMapMarkedAlt } from 'react-icons/fa';
+import { FaUsers, FaBoxOpen, FaClipboardList, FaMapMarkedAlt, FaTachometerAlt } from 'react-icons/fa';
 import { useNavigate, Outlet } from 'react-router-dom';
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
   return (
-    <div className="px-6 py-8 bg-gray-100 min-h-screen">
-      {/* Welcome Section */}
-      <div className="text-center mb-8">
-        <h2 className="text-3xl font-bold text-gray-800">Welcome to the Admin Dashboard</h2>
-        <p className="text-gray-600 mt-2">Manage your application efficiently with the options below.</p>
-      </div>
-
-      {/* Dashboard Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        <div 
-          className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition transform hover:scale-105"
-          onClick={() => navigate('userlist')}
-        >
-          <FaUsers className="text-4xl text-blue-500 mx-auto" />
-          <h3 className="text-xl font-semibold text-center mt-4">Users</h3>
-          <p className="text-center text-gray-600">Manage all users</p>
+    <div className="flex h-screen bg-gray-100 overflow-hidden">
+      {/* Sidebar */}
+      <aside className="w-64 bg-gray-800 text-white flex flex-col">
+        <div className="py-6 px-6 text-center">
+          <h2 className="text-2xl font-bold">Admin Panel</h2>
         </div>
-
-        <div 
-          className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition transform hover:scale-105"
-          onClick={() => navigate('productlist')}
-        >
-          <FaBoxOpen className="text-4xl text-green-500 mx-auto" />
-          <h3 className="text-xl font-semibold text-center mt-4">Products</h3>
-          <p className="text-center text-gray-600">Manage products</p>
-        </div>
-
-        <div 
-          className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition transform hover:scale-105"
-          onClick={() => navigate('orderlist')}
-        >
-          <FaClipboardList className="text-4xl text-yellow-500 mx-auto" />
-          <h3 className="text-xl font-semibold text-center mt-4">Orders</h3>
-          <p className="text-center text-gray-600">Manage orders</p>
-        </div>
-
-        <div 
-          className="bg-white shadow-lg rounded-lg p-6 cursor-pointer hover:shadow-xl transition transform hover:scale-105"
-          onClick={() => navigate('locations')}
-        >
-          <FaMapMarkedAlt className="text-4xl text-red-500 mx-auto" />
-          <h3 className="text-xl font-semibold text-center mt-4">Locations</h3>
-          <p className="text-center text-gray-600">Manage store locations</p>
-        </div>
-      </div>
+        <nav className="mt-8 flex-1 overflow-y-auto">
+          <ul className="space-y-4">
+            <li className="cursor-pointer flex items-center px-6 py-3 hover:bg-gray-700 transition" onClick={() => navigate('dash')}>
+              <FaTachometerAlt className="text-xl mr-3" />
+              <span>Dashboard</span>
+            </li>
+            <li className="cursor-pointer flex items-center px-6 py-3 hover:bg-gray-700 transition" onClick={() => navigate('userlist')}>
+              <FaUsers className="text-xl mr-3" />
+              <span>Users</span>
+            </li>
+            <li className="cursor-pointer flex items-center px-6 py-3 hover:bg-gray-700 transition" onClick={() => navigate('productlist')}>
+              <FaBoxOpen className="text-xl mr-3" />
+              <span>Products</span>
+            </li>
+            <li className="cursor-pointer flex items-center px-6 py-3 hover:bg-gray-700 transition" onClick={() => navigate('orderlist')}>
+              <FaClipboardList className="text-xl mr-3" />
+              <span>Orders</span>
+            </li>
+            <li className="cursor-pointer flex items-center px-6 py-3 hover:bg-gray-700 transition" onClick={() => navigate('locations')}>
+              <FaMapMarkedAlt className="text-xl mr-3" />
+              <span>Locations</span>
+            </li>
+          </ul>
+        </nav>
+      </aside>
 
       {/* Main Content Area */}
-      <div className="mt-10 bg-white shadow-lg rounded-lg p-6">
-        {/* This will render the nested route content */}
-        <Outlet />
-      </div>
+      <main className="flex-1 bg-gray-100 overflow-auto">
+        {/* Welcome Section */}
+        <div className="py-6 px-8 bg-gray-100">
+          <h1 className="text-3xl font-bold text-gray-800">Welcome to the Admin Dashboard</h1>
+          <p className="text-gray-600 mt-2">Manage your application efficiently with the options on the left.</p>
+        </div>
+
+        {/* Main Content (Outlet will render nested routes here) */}
+        <div className="bg-white shadow-md rounded-lg p-6 mx-8 my-4">
+          <Outlet />
+        </div>
+      </main>
     </div>
   );
 };

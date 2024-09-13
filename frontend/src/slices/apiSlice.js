@@ -1,16 +1,13 @@
-import { fetchBaseQuery, createApi} from '@reduxjs/toolkit/query/react';
+import { fetchBaseQuery, createApi } from '@reduxjs/toolkit/query/react';
 import { BASE_URL } from '../constants';
 import { logout } from './authSlice';
 
-
-// Customize baseQuery to handle JWT expiration and logout
 const baseQuery = fetchBaseQuery({
   baseUrl: BASE_URL,
 });
 
 async function baseQueryWithAuth(args, api, extra) {
   const result = await baseQuery(args, api, extra);
-  // Dispatch the logout action on 401.
   if (result.error && result.error.status === 401) {
     api.dispatch(logout());
   }
@@ -19,8 +16,9 @@ async function baseQueryWithAuth(args, api, extra) {
 
 export const apiSlice = createApi({
   baseQuery: baseQueryWithAuth,
-  tagTypes: ['Product', 'Order', 'User', 'Location'],
+  tagTypes: ['Product', 'Order', 'Payment', 'User', 'Location'],
   endpoints: (builder) => ({
+    // Existing location endpoints
     listLocations: builder.query({
       query: () => '/api/locations',
       providesTags: ['Location'],
@@ -55,14 +53,20 @@ export const apiSlice = createApi({
         body: { pincode },
       }),
     }),
+
+    fetchStats: builder.query({
+      query: () => '/api/admin/stats',
+      providesTags: ['User', 'Product', 'Order', 'Location'],
+    }),
+  
   }),
 });
 
-// Export hooks for using the endpoints
 export const {
   useListLocationsQuery,
   useAddLocationMutation,
   useDeleteLocationMutation,
-  useUpdateLocationMutation, // Ensure this is exported
+  useUpdateLocationMutation,
   useCheckLocationMutation,
+  useFetchStatsQuery,
 } = apiSlice;

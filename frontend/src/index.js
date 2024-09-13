@@ -5,8 +5,9 @@ import './assets/styles/index.css';
 import 'bootstrap/dist/css/bootstrap.min.css';
 import App from './App';
 import reportWebVitals from './reportWebVitals';
-import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider, } from 'react-router-dom';
+import { createBrowserRouter, createRoutesFromElements, Route, RouterProvider } from 'react-router-dom';
 import { HelmetProvider } from 'react-helmet-async';
+//import AdminLayout from './components/AdminLayout';
 import PrivateRoute from './components/PrivateRoute';
 import AdminRoute from './components/AdminRoute';
 import HomeScreen from './screens/HomeScreen';
@@ -15,7 +16,7 @@ import CartScreen from './screens/CartScreen';
 import LoginScreen from './screens/LoginScreen';
 import RegisterScreen from './screens/RegisterScreen';
 import ShippingScreen from './screens/ShippingScreen';
-import PaymentScreen from './screens/PaymentScreen';
+import PaymentScreen from './screens/PaymentScreen'; // Razorpay integration
 import PlaceOrderScreen from './screens/PlaceOrderScreen';
 import OrderScreen from './screens/OrderScreen';
 import ProfileScreen from './screens/ProfileScreen';
@@ -28,11 +29,15 @@ import TrackOrderScreen from './screens/TrackOrderScreen';
 import UpdateOrderStepsScreen from './screens/admin/UpdateOrderStepsScreen.jsx';
 import store from './store';
 import { Provider } from 'react-redux';
-import { PayPalScriptProvider } from '@paypal/react-paypal-js';
+import { ChakraProvider } from '@chakra-ui/react';
 import LocationScreen from './screens/admin/LocationScreen';
 import About from './screens/About.jsx';
 import ContactUs from './screens/ContactUs.jsx';
 import AdminDashboard from './screens/admin/Dashboard.jsx';
+import PaymentSuccess from './components/PaymentSuccess';
+import FAQ from './screens/FAQ';
+import Shop from './screens/Shop';
+import AnalyticsDashboard from './screens/admin/Analytic';
 
 const router = createBrowserRouter(
   createRoutesFromElements(
@@ -51,16 +56,20 @@ const router = createBrowserRouter(
         <Route path='/shipping' element={<ShippingScreen />} />
         <Route path='/about' element={<About />} />
         <Route path='/contact' element={<ContactUs />} />
+        <Route path='/faq' element={<FAQ />} />
+        <Route path='/shop' element={<Shop />} />
         <Route path='/payment' element={<PaymentScreen />} />
         <Route path='/placeorder' element={<PlaceOrderScreen />} />
         <Route path='/order/:id' element={<OrderScreen />} />
         <Route path='/profile' element={<ProfileScreen />} />
         <Route path='/track-order/:id' element={<TrackOrderScreen />} />
+        <Route path='/paymentsuccess' element={<PaymentSuccess />} />
       </Route>
 
-      {/* Admin users */}
+      {/* Admin routes */}
       <Route path='' element={<AdminRoute />}>
-        <Route path='/admin/dashboard' element={<AdminDashboard />}>
+      <Route path='/admin/dashboard' element={<AdminDashboard />}>
+          <Route path='dash' element={<AnalyticsDashboard />} />
           <Route path='userlist' element={<UserListScreen />} />
           <Route path='productlist' element={<ProductListScreen />} />
           <Route path='orderlist' element={<OrderListScreen />} />
@@ -77,11 +86,11 @@ const router = createBrowserRouter(
 const root = ReactDOM.createRoot(document.getElementById('root'));
 root.render(
   <Provider store={store}>
-    <PayPalScriptProvider deferLoading={true}>
+    <ChakraProvider>
       <HelmetProvider>
         <RouterProvider router={router} />
       </HelmetProvider>
-    </PayPalScriptProvider>
+    </ChakraProvider>
   </Provider>
 );
 

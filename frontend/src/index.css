@@ -15,4 +15,34 @@
     background-size: cover;
     animation: moveBackground 20s linear infinite;
   }
+  @keyframes floatBackground {
+    0% {
+      background-position: 0% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+    }
+    100% {
+      background-position: 0% 0%;
+    }
+  }
   
+  body {
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
+  }
+  
+  html, body, #root {
+    height: 100%;  
+  }
+  
+  body.bg-moving-pattern {
+    background-image: url('https://images.unsplash.com/photo-1482977036925-e8fcaa643657?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8ODV8fHBhdHRlcm58ZW58MHx8MHx8fDA%3D'); 
+    background-size: 200% 200%;  
+    animation: floatBackground 20s linear infinite;  
+    background-attachment: fixed;  
+    background-repeat: no-repeat;
+    background-position: center;
+    background-color: #f0f0f0; 
+  }

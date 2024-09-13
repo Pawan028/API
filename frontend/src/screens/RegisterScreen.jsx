@@ -3,8 +3,6 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Form, Button, Row, Col } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import Loader from '../components/Loader';
- 
-
 import { useRegisterMutation } from '../slices/usersApiSlice';
 import { setCredentials } from '../slices/authSlice';
 import { toast } from 'react-toastify';
@@ -14,16 +12,12 @@ const RegisterScreen = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  const [validated] = useState(false);
+  const [validated, setValidated] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
-
   const [register, { isLoading }] = useRegisterMutation();
-
   const { userInfo } = useSelector((state) => state.auth);
-
   const { search } = useLocation();
   const sp = new URLSearchParams(search);
   const redirect = sp.get('redirect') || '/';
@@ -34,42 +28,48 @@ const RegisterScreen = () => {
     }
   }, [navigate, redirect, userInfo]);
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-
-    // Validate the name field to include only alphabetic characters
+  const validateForm = () => {
     if (name.trim().length < 3 || !/^[A-Za-z\s]+$/.test(name)) {
       toast.error('Name must be at least 3 characters long and contain only letters');
-      return;
+      return false;
     }
 
     if (!/^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/.test(email)) {
       toast.error('Please enter a valid email address');
-      return;
+      return false;
     }
 
     if (password.length < 6) {
       toast.error('Password must be at least 6 characters');
-      return;
+      return false;
     }
 
     if (password !== confirmPassword) {
       toast.error('Passwords do not match');
-      return;
+      return false;
     }
 
-    try {
-      const res = await register({ name, email, password }).unwrap();
-      dispatch(setCredentials({ ...res }));
-      navigate(redirect);
-    } catch (err) {
-      toast.error(err?.data?.message || err.error);
+    return true;
+  };
+
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    setValidated(true);
+
+    if (validateForm()) {
+      try {
+        const res = await register({ name, email, password }).unwrap();
+        dispatch(setCredentials({ ...res }));
+        navigate(redirect);
+      } catch (err) {
+        toast.error(err?.data?.message || err.error);
+      }
     }
   };
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center bg-moving-pattern bg-cover bg-center">
-      <div className="absolute inset-0 bg-black opacity-40"></div>
+    <div className="relative min-h-screen flex items-center justify-center bg-cover bg-center">
+      <div className="absolute inset-0 opacity-40"></div>
       <div className="relative z-10 bg-white p-8 rounded-xl shadow-xl transform transition-transform hover:scale-105 hover:shadow-2xl max-w-sm mx-auto">
         <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">Register</h1>
 

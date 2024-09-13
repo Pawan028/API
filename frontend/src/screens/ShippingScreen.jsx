@@ -1,10 +1,8 @@
 import React, { useState } from 'react';
-import { Form, Button } from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast, ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import FormContainer from '../components/FormContainer';
 import CheckoutSteps from '../components/CheckoutSteps';
 import { saveShippingAddress } from '../slices/cartSlice';
 
@@ -56,82 +54,93 @@ const ShippingScreen = () => {
   };
 
   return (
-    <FormContainer>
-      <ToastContainer />
-      <CheckoutSteps step1 step2 />
-      <h1>Shipping</h1>
-      <Form onSubmit={submitHandler}>
-        <Form.Group className='my-2' controlId='address'>
-          <Form.Label>Address</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter address'
-            value={address}
-            required
-            onChange={(e) => setAddress(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className='my-2' controlId='city'>
-          <Form.Label>City</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter city'
-            value={city}
-            required
-            onChange={(e) => setCity(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className='my-2' controlId='state'>
-          <Form.Label>State</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter state'
-            value={state}
-            required
-            onChange={(e) => setState(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className='my-2' controlId='pincode'>
-          <Form.Label>Pincode</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter pincode'
-            value={pincode}
-            required
-            onChange={(e) => setPincode(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className='my-2' controlId='country'>
-          <Form.Label>Country</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter country'
-            value={country}
-            required
-            onChange={(e) => setCountry(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Form.Group className='my-2' controlId='contactNumber'>
-          <Form.Label>Contact Number</Form.Label>
-          <Form.Control
-            type='text'
-            placeholder='Enter contact number'
-            value={contactNumber}
-            required
-            onChange={(e) => setContactNumber(e.target.value)}
-          ></Form.Control>
-        </Form.Group>
-
-        <Button type='submit' variant='primary'>
-          Continue
-        </Button>
-      </Form>
-    </FormContainer>
+    <div className="min-h-screen  flex flex-col justify-center items-center p-8">
+      <div className="w-full max-w-lg bg-white rounded-xl shadow-2xl p-8 space-y-6 transform transition-transform duration-500 hover:scale-105">
+        <ToastContainer />
+        <CheckoutSteps step1 step2 />
+        <h1 className="text-4xl font-bold text-gray-900 text-center mb-6">Shipping Details</h1>
+        <form onSubmit={submitHandler} className="space-y-4">
+          <div className="flex flex-col">
+            <label htmlFor="address" className="text-lg font-medium text-gray-700">Address</label>
+            <input
+              type="text"
+              id="address"
+              placeholder="Enter address"
+              value={address}
+              required
+              onChange={(e) => setAddress(e.target.value)}
+              className="mt-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="city" className="text-lg font-medium text-gray-700">City</label>
+            <input
+              type="text"
+              id="city"
+              placeholder="Enter city"
+              value={city}
+              required
+              onChange={(e) => setCity(e.target.value)}
+              className="mt-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="state" className="text-lg font-medium text-gray-700">State</label>
+            <input
+              type="text"
+              id="state"
+              placeholder="Enter state"
+              value={state}
+              required
+              onChange={(e) => setState(e.target.value)}
+              className="mt-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="pincode" className="text-lg font-medium text-gray-700">Pincode</label>
+            <input
+              type="text"
+              id="pincode"
+              placeholder="Enter pincode"
+              value={pincode}
+              required
+              onChange={(e) => setPincode(e.target.value)}
+              className="mt-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="country" className="text-lg font-medium text-gray-700">Country</label>
+            <input
+              type="text"
+              id="country"
+              placeholder="Enter country"
+              value={country}
+              required
+              onChange={(e) => setCountry(e.target.value)}
+              className="mt-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <div className="flex flex-col">
+            <label htmlFor="contactNumber" className="text-lg font-medium text-gray-700">Contact Number</label>
+            <input
+              type="text"
+              id="contactNumber"
+              placeholder="Enter contact number"
+              value={contactNumber}
+              required
+              onChange={(e) => setContactNumber(e.target.value)}
+              className="mt-1 px-4 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-green-500"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-gradient-to-r from-green-500 to-green-700 text-white py-3 rounded-lg shadow-lg transform transition-transform duration-300 hover:scale-105 hover:shadow-xl"
+          >
+            Continue
+          </button>
+        </form>
+      </div>
+    </div>
   );
 };
 
