@@ -11,7 +11,7 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description":"![Razorpay Logo](https://media.licdn.com/dms/image/C4D34AQHUjodJWY_isw/ugc-proxy-shrink_1280_800/0/1604260863360?e=2147483647&v=beta&t=qyJ4DQ0Y72JLB2cfZFFCq5kOQfPWi-8R44UgT9iNYi0)",
+  "description": "",
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",

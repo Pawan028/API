@@ -1,26 +1,27 @@
 {
-  "compilerOptions": {
-    "allowJs": true,
-    "jsx": "react",
-    "noEmit": true,
-    "isolatedModules": true
-  },
-  "typeAcquisition": {
-    "enable": true,
-    "exclude": [
-      "babel__core",
-      "babel__generator",
-      "babel__template",
-      "babel__traverse",
-      "bonjour",
-      "estree",
-      "testing-library__jest-dom",
-      "trusted-types",
-      "ws",
-      "yargs",
-      "yargs-parser"
-    ]
-  },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules"]
-}
+    "compilerOptions": {
+      "allowJs": true,
+      "jsx": "react",
+      "noEmit": true,
+      "isolatedModules": true
+    },
+    "typeAcquisition": {
+      "enable": true,
+      "exclude": [
+        "babel__core",
+        "babel__generator",
+        "babel__template",
+        "babel__traverse",
+        "bonjour",
+        "estree",
+        "testing-library__jest-dom",
+        "trusted-types",
+        "ws",
+        "yargs",
+        "yargs-parser"
+      ]
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
+  }
+  
